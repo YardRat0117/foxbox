@@ -38,7 +38,6 @@ sudo apt install podman
 
 3. Ready to use!
 
-
 ---
 
 ## Configuration
@@ -78,15 +77,24 @@ tools:
       - $(pwd):/work
 ```
 
-
 ---
 
 ## Roadmap
 
-- [ ] List available tools (`ratbox list`)
-- [ ] Install/pull images (`ratbox install <tool>`)
-- [ ] Support multiple versions (`ratbox python@3.9`)
-- [ ] Add Docker support
+- Functionality
+    - [ ] List available tools (`ratbox list`)
+    - [ ] Install/pull images (`ratbox install <tool>`)
+    - [ ] Support multiple versions (`ratbox python@3.9`)
+    - [ ] Add Docker support
+- Reliability
+    - [ ] Boot speed optimization
+    - [ ] Error hints
+    - [ ] Logging
+- Vim Integration
+    - [ ] Vim plugin (planned for another project)
+- Community
+    - [ ] Across-platform support (Linux/macOS/WSL/Windows)
+    - [ ] Detailed docs, tutorials and wikis
 
 ---
 
