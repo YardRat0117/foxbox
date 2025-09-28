@@ -15,14 +15,13 @@ A lightweight CLI tool to run common development tools in containers. No need to
 ```
 
 - Auto-mount your current directory into the container
-- Configurable tool mappings in `~/.ratbox/config.yml`
 - Supports Podman (Docker support coming later)
 
 ---
 
 ## Installation
 
-### From source
+1. Build from source
 
 ```bash
 git clone https://github.com/yardrat0117/ratbox.git
@@ -30,16 +29,21 @@ cd ratbox
 go build -o ratbox ./rbox
 ```
 
-### Add to PATH
+2. Prepare Podman (e.g., via APT)
+
 ```bash
-export PATH=$PATH:/path/to/ratbox
+sudo apt update
+sudo apt install podman
 ```
+
+3. Ready to use!
+
 
 ---
 
 ## Configuration
 
-Default tools are defined in `config/default.yml`:
+Default tools are provided in `config/default.yml`. You can also customize it if you want. If `~/.config/rbox.yml` is provided, this would override `config/default.yml`.
 
 ```yml
 tools:
