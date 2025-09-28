@@ -22,7 +22,19 @@ type Config struct {
 }
 
 func loadConfig() (*Config, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	userConfigPath := filepath.Join(home, ".config", "rbox.yml")
 	configPath := filepath.Join("config", "default.yml")
+
+	// Overwrite `config/default.yml` with `~/.config/rbox.yml`
+	if _, err := os.Stat(userConfigPath); err == nil {
+		configPath = userConfigPath
+	}
+
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
