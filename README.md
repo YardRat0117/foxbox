@@ -43,7 +43,9 @@ sudo apt install podman
 
 ## Configuration
 
-Default tools are provided in `config/default.yml`. You can also customize it if you want. If `~/.config/rbox.yml` is provided, this would override `config/default.yml`.
+Default tools are provided in `config/default.yml`. 
+You can also DIY - if `~/.config/rbox.yml` is provided, this would override `config/default.yml`.
+Note that `$(pwd)` is the supported sign to represent current working directory in `rbox.yml`. Please adhere to this represetation!
 
 ```yml
 tools:

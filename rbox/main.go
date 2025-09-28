@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -74,10 +75,13 @@ func main() {
 			podmanArgs := []string{"run", "--rm", "-it"}
 			for _, vol := range tool.Volumes {
 				hostVol := vol
-				if hostVol == "$(pwd):/work" {
-					cwd, _ := os.Getwd()
-					hostVol = cwd + ":/work"
+
+				cwd, err := os.Getwd()
+				if err != nil {
+					panic(err)
 				}
+
+				hostVol = strings.ReplaceAll(hostVol, "$(pwd)", cwd)
 				podmanArgs = append(podmanArgs, "-v", hostVol)
 			}
 			podmanArgs = append(podmanArgs, "-w", tool.Workdir, tool.Image, tool.Entry)
