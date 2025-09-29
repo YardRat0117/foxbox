@@ -67,7 +67,7 @@ func (p * PodmanRuntime) ImageExists(image string) (bool, error) {
 }
 
 func (p * PodmanRuntime) BuildRunCmd(tool config.Tool, ver string, args []string) *exec.Cmd {
-	podmanArgs := []string{"run", "--rm", "-it"}
+	podmanArgs := []string{"run", "--rm", "-i"}
 	for _, vol := range tool.Volumes {
 		hostVol := vol
 
