@@ -1,27 +1,27 @@
 tools:
   gcc:
-    image: gcc:latest
+    image: gcc
     entry: gcc
     workdir: /work
     volumes:
       - $(pwd):/work
 
   python:
-    image: python:latest
+    image: python
     entry: python
     workdir: /work
     volumes:
       - $(pwd):/work
 
   node:
-    image: node:latest
+    image: node
     entry: node
     workdir: /work
     volumes:
       - $(pwd):/work
 
   rustc:
-    image: rust:latest
+    image: rust
     entry: rustc
     workdir: /work
     volumes:

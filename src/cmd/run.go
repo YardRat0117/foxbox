@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -11,17 +12,22 @@ import (
 )
 
 var runCmd = &cobra.Command{
-	Use: "run <tool> [args..] -- [toolArgs...]",
+	Use:   "run <tool> [args..] -- [toolArgs...]",
 	Short: "Run a tool inside its container",
-	Args: cobra.MinimumNArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		toolName := args[0]
+		toolInfo := strings.SplitN(args[0], "@", 2)
+		toolName := toolInfo[0]
+		version := ""
+		if len(toolInfo) == 2 {
+			version = toolInfo[1]
+		}
 		toolArgs := args[1:]
-		RunTool(toolName, toolArgs)
+		RunTool(toolName, version, toolArgs)
 	},
 }
 
-func RunTool(toolName string, toolArgs []string) {
+func RunTool(toolName string, version string, toolArgs []string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -36,7 +42,7 @@ func RunTool(toolName string, toolArgs []string) {
 
 	runtime := container.NewRuntime()
 
-	cmd := runtime.BuildRunCmd(tool, toolArgs)
+	cmd := runtime.BuildRunCmd(tool, version ,toolArgs)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

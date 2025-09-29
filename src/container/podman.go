@@ -66,7 +66,7 @@ func (p * PodmanRuntime) ImageExists(image string) (bool, error) {
 	}
 }
 
-func (p * PodmanRuntime) BuildRunCmd(tool config.Tool, args []string) *exec.Cmd {
+func (p * PodmanRuntime) BuildRunCmd(tool config.Tool, ver string, args []string) *exec.Cmd {
 	podmanArgs := []string{"run", "--rm", "-it"}
 	for _, vol := range tool.Volumes {
 		hostVol := vol
@@ -80,7 +80,12 @@ func (p * PodmanRuntime) BuildRunCmd(tool config.Tool, args []string) *exec.Cmd 
 		podmanArgs = append(podmanArgs, "-v", hostVol)
 	}
 
-	podmanArgs = append(podmanArgs, "-w", tool.Workdir, tool.Image, tool.Entry)
+	image := tool.Image
+	if ver != "" {
+		image = fmt.Sprintf("%s:%s", tool.Image, ver)
+	}
+
+	podmanArgs = append(podmanArgs, "-w", tool.Workdir, image, tool.Entry)
 	podmanArgs = append(podmanArgs, args...)
 
 	return exec.Command("podman", podmanArgs...)

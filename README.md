@@ -50,7 +50,11 @@ ratbox install gcc
 3. Run a specified tool (with arguments for the tool)
 
 ```bash
+// If version not specified, `ratbox` pulls the `latest` by default
 ratbox run gcc -- hello.c -o hello
+
+// Version should be specified with `@`
+ratbox run python@3.12 -- hello.py
 ```
 
 ---
@@ -68,7 +72,7 @@ Note: `$(pwd)` is the supported representation for current working directory in 
 - Functionality
     - [x] List available tools (`ratbox list`)
     - [x] Install/pull images (`ratbox install <tool>`)
-    - [ ] Support multiple versions (`ratbox python@3.9`)
+    - [x] Support multiple versions (`ratbox python@3.9`)
     - [ ] Add Docker support
 - Reliability
     - [ ] Boot speed optimization

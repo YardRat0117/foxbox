@@ -11,5 +11,5 @@ type ContainerRuntime interface {
 
 	PullImage(tool config.Tool) error
 
-	BuildRunCmd(tool config.Tool, args []string) *exec.Cmd
+	BuildRunCmd(tool config.Tool, ver string, args []string) *exec.Cmd
 }
