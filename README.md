@@ -6,7 +6,7 @@ A lightweight CLI tool to run common development tools in containers. No need to
 
 ## Features
 
-- Run tools via containers with a single command:
+- Run tools in containers with a single command
 - Auto-mount your current directory into the container
 - Supports Podman (Docker support coming later)
 
@@ -81,6 +81,9 @@ Note: `$(pwd)` is the supported representation for current working directory in 
     - [ ] Check foxbox version (`foxbox version`)
     - [ ] Add Docker support
 - Reliability
+    - [ ] Code quality
+        - [ ] Comments
+        - [ ] Refactoring
     - [ ] Boot speed optimization
     - [ ] Error hints
     - [ ] Logging
