@@ -83,7 +83,7 @@ tools:
 
 - Functionality
     - [x] List available tools (`ratbox list`)
-    - [ ] Install/pull images (`ratbox install <tool>`)
+    - [x] Install/pull images (`ratbox install <tool>`)
     - [ ] Support multiple versions (`ratbox python@3.9`)
     - [ ] Add Docker support
 - Reliability

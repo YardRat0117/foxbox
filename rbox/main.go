@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -31,7 +35,7 @@ func loadConfig() (*Config, error) {
 	userConfigPath := filepath.Join(home, ".config", "rbox.yml")
 	configPath := filepath.Join("config", "default.yml")
 
-	// Overwrite `config/default.yml` with `~/.config/rbox.yml`
+	// Prefer `~/.config/rbox.yml`
 	if _, err := os.Stat(userConfigPath); err == nil {
 		configPath = userConfigPath
 	}
@@ -48,6 +52,53 @@ func loadConfig() (*Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+// (true,nil) -> Image exists
+// (false,nil) -> Image doesn't exist, no error
+// (false,err) -> Error occurred
+func imageExists(image string) (bool, error) {
+	if _, err := exec.LookPath("podman"); err != nil {
+		return false, fmt.Errorf("podman not found in PATH: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "podman", "image", "inspect", image)
+
+	// Keep stderr for debugging, discard stdout
+	var stderr bytes.Buffer
+	cmd.Stdout = io.Discard
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err == nil {
+		return true, nil // Image exists
+	} else {
+		// Timeout
+		if ctx.Err() == context.DeadlineExceeded {
+			return false, fmt.Errorf("timed out checking image: %w", err)
+		}
+
+		var msg = strings.TrimSpace(stderr.String())
+		// Occasional cases for container not exist
+		if strings.Contains(msg, "No such object") ||
+			strings.Contains(msg, "No such image") ||
+			strings.Contains(strings.ToLower(msg), "not found") {
+			return false, nil
+		}
+
+		// Unoccasional cases
+		return false, fmt.Errorf("image inspect failed: %s", msg)
+	}
+}
+
+func pullImage(image string) error {
+	fmt.Printf("Pulling image %s using podman...\n", image)
+	cmd := exec.Command("podman", "pull", image)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func main() {
@@ -128,7 +179,36 @@ func main() {
 		},
 	}
 
+	var installCmd = &cobra.Command{
+		Use:   "install <tool>",
+		Short: "Install (pull) a tool's container image",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			toolName := args[0]
+
+			cfg, err := loadConfig()
+			if err != nil {
+				fmt.Println("Failed to load config:", err)
+				os.Exit(1)
+			}
+
+			tool, ok := cfg.Tools[toolName]
+			if !ok {
+				fmt.Printf("Tool '%s' not found in config\n", toolName)
+				os.Exit(1)
+			}
+
+			if err := pullImage(tool.Image); err != nil {
+				fmt.Println("Error pulling image:", err)
+				os.Exit(1)
+			}
+
+			fmt.Printf("Image %s installed successfully!\n", tool.Image)
+		},
+	}
+
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(installCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
