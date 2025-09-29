@@ -41,7 +41,7 @@ sudo apt install podman
 ratbox list
 ```
 
-2. Install a specified tool
+2. Install a specified tool (`latest` only)
 
 ```bash
 ratbox install gcc
@@ -74,7 +74,8 @@ Note: `$(pwd)` is the supported representation for current working directory in 
     - [x] Install tools/pull images (`ratbox install <tool>`)
     - [x] Support multiple versions (`ratbox python@3.9`)
     - [ ] Manage tools 
-        - [ ] Check installed tools (`ratbox tools`)
+        - [x] Check installed tools (merged into `ratbox list`)
+        - [x] Check tool tags (merged into `ratbox list`)
         - [ ] Remove installed tools (`ratbox rm python@3.9`)
         - [ ] Prune cached data (`ratbox prune`)
     - [ ] Check ratbox version (`ratbox version`)

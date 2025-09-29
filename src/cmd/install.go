@@ -32,11 +32,6 @@ func InstallTool(toolName string) {
         os.Exit(1)
     }
 
-    if err != nil {
-        fmt.Println("Error checking image:", err)
-        os.Exit(1)
-    }
-
 	runtime := container.NewRuntime()
 
     if err := runtime.PullImage(tool); err != nil {
