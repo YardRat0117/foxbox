@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/YardRat0117/ratbox/src/config"
+	"github.com/YardRat0117/foxbox/src/config"
 )
 
 type PodmanRuntime struct{}
@@ -107,12 +107,12 @@ func splitImage(image string) (string, string) {
 
 // helper
 func contains(slice []string, s string) bool {
-    for _, v := range slice {
-        if v == s {
-            return true
-        }
-    }
-    return false
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *PodmanRuntime) ListInstalled(tools map[string]config.Tool) (map[string]ToolStatus, error) {

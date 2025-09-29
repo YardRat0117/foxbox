@@ -5,9 +5,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "ratbox <tool> [args...] -- [toolArgs...]",
-	Short: "Ratbox - lightweight tool runtime",
-	Long:  "Ratbox manages containerized developer tools with a simple interface.",
+	Use:   "foxbox <tool> [args...] -- [toolArgs...]",
+	Short: "Foxbox - lightweight tool runtime",
+	Long:  "Foxbox manages containerized developer tools with a simple interface.",
 }
 
 func Execute() error {

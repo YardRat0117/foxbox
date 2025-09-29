@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/YardRat0117/ratbox/src/config"
-	"github.com/YardRat0117/ratbox/src/container"
+	"github.com/YardRat0117/foxbox/src/config"
+	"github.com/YardRat0117/foxbox/src/container"
 )
 
 var listCmd = &cobra.Command{

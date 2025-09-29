@@ -3,7 +3,7 @@ package container
 import (
 	"os/exec"
 
-	"github.com/YardRat0117/ratbox/src/config"
+	"github.com/YardRat0117/foxbox/src/config"
 )
 
 type ToolStatus struct {

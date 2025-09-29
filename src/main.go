@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/YardRat0117/ratbox/src/cmd"
+	"github.com/YardRat0117/foxbox/src/cmd"
 )
 
 func main() {

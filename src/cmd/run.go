@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/YardRat0117/ratbox/src/config"
-	"github.com/YardRat0117/ratbox/src/container"
+	"github.com/YardRat0117/foxbox/src/config"
+	"github.com/YardRat0117/foxbox/src/container"
 )
 
 var runCmd = &cobra.Command{
@@ -42,7 +42,7 @@ func RunTool(toolName string, version string, toolArgs []string) {
 
 	runtime := container.NewRuntime()
 
-	cmd := runtime.BuildRunCmd(tool, version ,toolArgs)
+	cmd := runtime.BuildRunCmd(tool, version, toolArgs)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -1,6 +1,6 @@
-# ratbox
+# foxbox
 
-A lightweight CLI tool to run common development tools in containers. No need to install compilers locally — you can just use `ratbox` and run commands in isolated containers.
+A lightweight CLI tool to run common development tools in containers. No need to install compilers locally — you can just use `foxbox` and run commands in isolated containers.
 
 ---
 
@@ -17,9 +17,9 @@ A lightweight CLI tool to run common development tools in containers. No need to
 1. Build from source
 
 ```bash
-git clone https://github.com/yardrat0117/ratbox.git
-cd ratbox
-go build -o ratbox ./rbox
+git clone https://github.com/yardrat0117/foxbox.git
+cd foxbox
+go build -o foxbox ./src
 ```
 
 2. Prepare Podman (e.g., via APT)
@@ -38,23 +38,23 @@ sudo apt install podman
 1. List all configured tools
 
 ```bash
-ratbox list
+foxbox list
 ```
 
 2. Install a specified tool (`latest` only)
 
 ```bash
-ratbox install gcc
+foxbox install gcc
 ```
 
 3. Run a specified tool (with arguments for the tool)
 
 ```bash
-# If version not specified, `ratbox` pulls the `latest` by default
-ratbox run gcc -- hello.c -o hello
+# If version not specified, `foxbox` pulls the `latest` by default
+foxbox run gcc -- hello.c -o hello
 
 # Version should be specified with `@`
-ratbox run python@3.12 -- hello.py
+foxbox run python@3.12 -- hello.py
 ```
 
 ---
@@ -70,15 +70,15 @@ Note: `$(pwd)` is the supported representation for current working directory in 
 ## Roadmap
 
 - Functionality
-    - [x] List available tools in config file(`ratbox list`)
-    - [x] Install tools/pull images (`ratbox install <tool>`)
-    - [x] Support multiple versions (`ratbox python@3.9`)
+    - [x] List available tools in config file(`foxbox list`)
+    - [x] Install tools/pull images (`foxbox install <tool>`)
+    - [x] Support multiple versions (`foxbox python@3.9`)
     - [ ] Manage tools 
-        - [x] Check installed tools (merged into `ratbox list`)
-        - [x] Check tool tags (merged into `ratbox list`)
-        - [ ] Remove installed tools (`ratbox rm python@3.9`)
-        - [ ] Prune cached data (`ratbox prune`)
-    - [ ] Check ratbox version (`ratbox version`)
+        - [x] Check installed tools (merged into `foxbox list`)
+        - [x] Check tool tags (merged into `foxbox list`)
+        - [ ] Remove installed tools (`foxbox rm python@3.9`)
+        - [ ] Prune cached data (`foxbox prune`)
+    - [ ] Check foxbox version (`foxbox version`)
     - [ ] Add Docker support
 - Reliability
     - [ ] Boot speed optimization
