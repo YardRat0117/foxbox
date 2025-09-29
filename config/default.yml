@@ -20,7 +20,7 @@ tools:
     volumes:
       - $(pwd):/work
 
-  rust:
+  rustc:
     image: rust:latest
     entry: rustc
     workdir: /work
