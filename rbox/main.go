@@ -57,6 +57,12 @@ func main() {
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			toolName := args[0]
+
+			if toolName == "list" {
+				fmt.Println("Use `rbox list` instead of `rbox list <args>`")
+				os.Exit(0)
+			}
+
 			toolArgs := args[1:]
 
 			cfg, err := loadConfig()
@@ -68,6 +74,10 @@ func main() {
 			tool, ok := cfg.Tools[toolName]
 			if !ok {
 				fmt.Printf("Tool '%s' not found in config\n", toolName)
+				fmt.Println("Available tools:")
+				for name := range cfg.Tools {
+					fmt.Printf("  - %s\n", name)
+				}
 				os.Exit(1)
 			}
 
@@ -84,6 +94,7 @@ func main() {
 				hostVol = strings.ReplaceAll(hostVol, "$(pwd)", cwd)
 				podmanArgs = append(podmanArgs, "-v", hostVol)
 			}
+
 			podmanArgs = append(podmanArgs, "-w", tool.Workdir, tool.Image, tool.Entry)
 			podmanArgs = append(podmanArgs, toolArgs...)
 
@@ -99,6 +110,25 @@ func main() {
 			}
 		},
 	}
+
+	var listCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List available tools",
+		Run: func(cmd *cobra.Command, args []string) {
+			cfg, err := loadConfig()
+			if err != nil {
+				fmt.Println("Failed to load config:", err)
+				os.Exit(1)
+			}
+
+			fmt.Println("Available tools:")
+			for name, tool := range cfg.Tools {
+				fmt.Printf("  - %-10s (%s)\n", name, tool.Image)
+			}
+		},
+	}
+
+	rootCmd.AddCommand(listCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
