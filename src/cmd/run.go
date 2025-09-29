@@ -16,18 +16,23 @@ var runCmd = &cobra.Command{
 	Short: "Run a tool inside its container",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Split original parameters
 		toolInfo := strings.SplitN(args[0], "@", 2)
+
+		// Parse tool info
 		toolName := toolInfo[0]
-		version := ""
+		toolVer := ""
 		if len(toolInfo) == 2 {
-			version = toolInfo[1]
+			toolVer = toolInfo[1]
 		}
 		toolArgs := args[1:]
-		RunTool(toolName, version, toolArgs)
+
+		// `runtime` defined in `rootCmd`
+		RunTool(runtime, toolName, toolVer, toolArgs)
 	},
 }
 
-func RunTool(toolName string, version string, toolArgs []string) {
+func RunTool(runtime container.ContainerRuntime, toolName string, toolVer string, toolArgs []string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -40,15 +45,13 @@ func RunTool(toolName string, version string, toolArgs []string) {
 		os.Exit(1)
 	}
 
-	runtime := container.NewRuntime()
-
-	cmd := runtime.BuildRunCmd(tool, version, toolArgs)
+	cmd := runtime.BuildRunCmd(tool, toolVer, toolArgs)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println("Error running container:", err)
+		fmt.Println("Error running tool:", err)
 		os.Exit(1)
 	}
 }

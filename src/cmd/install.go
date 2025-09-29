@@ -15,11 +15,12 @@ var installCmd = &cobra.Command{
 	Short: "Install (pull) a tool's container image",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		InstallTool(args[0])
+		// `runtime` defined in `rootCmd`
+		InstallTool(args[0], runtime)
 	},
 }
 
-func InstallTool(toolName string) {
+func InstallTool(toolName string, runtime container.ContainerRuntime) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -31,8 +32,6 @@ func InstallTool(toolName string) {
 		fmt.Printf("Tool '%s' not found in config\n", toolName)
 		os.Exit(1)
 	}
-
-	runtime := container.NewRuntime()
 
 	if err := runtime.PullImage(tool); err != nil {
 		fmt.Println("Error pulling image:", err)

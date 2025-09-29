@@ -15,47 +15,49 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all configured tools status",
 	Run: func(cmd *cobra.Command, args []string) {
-		ListConfig()
+		// `runtime` defined in `rootCmd`
+		ListConfig(runtime)
 	},
 }
 
-func ListConfig() {
+func ListConfig(runtime container.ContainerRuntime) {
+	// Load Config
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
 		os.Exit(1)
 	}
 
-	runtime := container.NewRuntime()
+	// Load installed tools
 	installed, err := runtime.ListInstalled(cfg.Tools)
 	if err != nil {
 		fmt.Println("Error listing installed tools:", err)
 		os.Exit(1)
 	}
 
-	const parenWidth = 15
-	const installPad = 5
-	const tagsWidth = 30
+	// Constants for formatting output
+	const nameWidth, parenWidth, insWidth = 8, 15, 5
 
 	fmt.Println("Configured tools:")
 	for name, tool := range cfg.Tools {
+		s, exists := installed[name]
+
+		// Installation status
 		status := "[not installed]"
+		if exists && s.Installed {
+			status = "[Installed]" + strings.Repeat(" ", insWidth)
+		}
+
+		// Tags
 		tags := ""
-		if s, exists := installed[name]; exists {
-			if s.Installed {
-				status = "[installed]"
-			}
-			if len(s.LocalTags) > 0 {
-				tags = "tags: " + strings.Join(s.LocalTags, ", ")
-			}
-		}
-		paren := fmt.Sprintf("(%s)", tool.Image)
-
-		if status == "[installed]" {
-			status = status + strings.Repeat(" ", installPad)
+		if exists && len(s.LocalTags) > 0 {
+			tags = "tags " + strings.Join(s.LocalTags, ", ")
 		}
 
-		fmt.Printf("  - %-8s %-*s %s %s\n", name, parenWidth, paren, status, tags)
-
+		// Output
+		fmt.Printf("- %-*s %-*s %s %s\n",
+			nameWidth, name,
+			parenWidth, fmt.Sprintf("(%s)", tool.Image),
+			status, tags)
 	}
 }
