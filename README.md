@@ -1,19 +1,12 @@
 # ratbox
 
-A lightweight CLI tool to run common development tools in containers. No need to install gcc, python, node, or rust locally — you can just use `ratbox` and run commands in isolated containers.
+A lightweight CLI tool to run common development tools in containers. No need to install compilers locally — you can just use `ratbox` and run commands in isolated containers.
 
 ---
 
 ## Features
 
 - Run tools via containers with a single command:
-
-```bash
-  # The `--` ensures arguments are passed to the contained tool.
-  ratbox python -- main.py
-  ratbox gcc -- hello.c -o hello
-```
-
 - Auto-mount your current directory into the container
 - Supports Podman (Docker support coming later)
 
@@ -40,42 +33,33 @@ sudo apt install podman
 
 ---
 
+## Usage
+
+1. List all configured tools
+
+```bash
+ratbox list
+```
+
+2. Install a specified tool
+
+```bash
+ratbox install gcc
+```
+
+3. Run a specified tool (with arguments for the tool)
+
+```bash
+ratbox run gcc -- hello.c -o hello
+```
+
+---
+
 ## Configuration
 
 Default tools are provided in `config/default.yml`. 
 You can also DIY - if `~/.config/rbox.yml` is provided, this would override `config/default.yml`.
-Note that `$(pwd)` is the supported sign to represent current working directory in `rbox.yml`. Please adhere to this represetation!
-
-```yml
-tools:
-  gcc:
-    image: gcc:latest
-    entry: gcc
-    workdir: /work
-    volumes:
-      - $(pwd):/work
-
-  python:
-    image: python:latest
-    entry: python
-    workdir: /work
-    volumes:
-      - $(pwd):/work
-
-  node:
-    image: node:latest
-    entry: node
-    workdir: /work
-    volumes:
-      - $(pwd):/work
-
-  rust:
-    image: rust:latest
-    entry: rustc
-    workdir: /work
-    volumes:
-      - $(pwd):/work
-```
+Note: `$(pwd)` is the supported representation for current working directory in `rbox.yml`. Please adhere to this represetation!
 
 ---
 
