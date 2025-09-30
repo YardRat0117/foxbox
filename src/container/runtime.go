@@ -1,22 +1,29 @@
 package container
 
 import (
-	"os/exec"
-
-	"github.com/YardRat0117/foxbox/src/config"
+	"github.com/YardRat0117/foxbox/src/types"
 )
 
-type ToolStatus struct {
-	Installed bool
-	LocalTags []string
+// ImageManager manages images, NOTHING to do with `tool`
+type ImageManager interface {
+	ImageExists(image string) (bool, error)
+	PullImage(image string) error
+	RemoveImage(image string) error
 }
 
-type ContainerRuntime interface {
-	ImageExists(image string) (bool, error)
+// Runner builds and conducts commands
+type Runner interface {
+	RunTool(tool types.Tool, version string, args []string) error
+}
 
-	PullImage(tool config.Tool) error
+// ToolInspector reflects tool info
+type ToolInspector interface {
+	CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error)
+}
 
-	BuildRunCmd(tool config.Tool, ver string, args []string) *exec.Cmd
-
-	ListInstalled(tools map[string]config.Tool) (map[string]ToolStatus, error)
+// Runtime represents the integrated interfaces
+type Runtime interface {
+	ImageManager
+	Runner
+	ToolInspector
 }

@@ -28,11 +28,11 @@ var runCmd = &cobra.Command{
 		toolArgs := args[1:]
 
 		// `runtime` defined in `rootCmd`
-		RunTool(runtime, toolName, toolVer, toolArgs)
+		runTool(runtime, toolName, toolVer, toolArgs)
 	},
 }
 
-func RunTool(runtime container.ContainerRuntime, toolName string, toolVer string, toolArgs []string) {
+func runTool(runtime container.Runtime, toolName string, toolVer string, toolArgs []string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -45,12 +45,7 @@ func RunTool(runtime container.ContainerRuntime, toolName string, toolVer string
 		os.Exit(1)
 	}
 
-	cmd := runtime.BuildRunCmd(tool, toolVer, toolArgs)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
+	if err := runtime.RunTool(tool, toolVer, toolArgs); err != nil {
 		fmt.Println("Error running tool:", err)
 		os.Exit(1)
 	}

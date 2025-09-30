@@ -7,8 +7,8 @@ A lightweight CLI tool to run common development tools in containers. No need to
 ## Features
 
 - Run tools in containers with a single command
-- Auto-mount your current directory into the container
-- Supports Podman (Docker support coming later)
+- Auto-mount directory into the container
+- Supports Podman (Docker support coming soon)
 
 ---
 
@@ -41,19 +41,17 @@ sudo apt install podman
 foxbox list
 ```
 
-2. Install a specified tool (`latest` only)
+2. Install a configured tool
 
 ```bash
 foxbox install gcc
+foxbox install python@3.12
 ```
 
-3. Run a specified tool (with arguments for the tool)
+3. Run a specified tool
 
 ```bash
-# If version not specified, `foxbox` pulls the `latest` by default
 foxbox run gcc -- hello.c -o hello
-
-# Version should be specified with `@`
 foxbox run python@3.12 -- hello.py
 ```
 

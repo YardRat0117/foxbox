@@ -6,17 +6,19 @@ import (
 	"github.com/YardRat0117/foxbox/src/container"
 )
 
-var runtime container.ContainerRuntime
+var runtime container.Runtime
 
 var rootCmd = &cobra.Command{
 	Use:   "foxbox <tool> [args...] -- [toolArgs...]",
 	Short: "Foxbox - lightweight tool runtime",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		runtime = container.NewRuntime()
+		// Podman currently
+		runtime = container.NewPodmanRuntime()
 	},
 }
 
+// Execute provides external interface for `main.go` to launch the program
 func Execute() error {
 	return rootCmd.Execute()
 }

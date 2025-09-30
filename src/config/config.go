@@ -5,40 +5,33 @@ import (
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/YardRat0117/foxbox/src/types"
 )
 
-type Tool struct {
-	Image   string   `yaml:"image"`
-	Entry   string   `yaml:"entry"`
-	Workdir string   `yaml:"workdir"`
-	Volumes []string `yaml:"volumes"`
-}
-
-type Config struct {
-	Tools map[string]Tool `yaml:"tools"`
-}
-
-func LoadConfig() (*Config, error) {
+// LoadConfig allows subcmds to load config from preset config files.
+func LoadConfig() (*types.Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 
-	userConfigPath := filepath.Join(home, ".config", "rbox.yml")
+	// Note: user config file (located at `~/.config/foxbox.yml`) would be preffered
+	userConfigPath := filepath.Join(home, ".config", "foxbox.yml")
 	configPath := filepath.Join("config", "default.yml")
-
-	// Prefer `~/.config/rbox.yml`
 	if _, err := os.Stat(userConfigPath); err == nil {
 		configPath = userConfigPath
 	}
 
+	// Open the config file
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	var cfg Config
+	// Decode the config file, and return as the type `Config`
+	var cfg types.Config
 	decoder := yaml.NewDecoder(f)
 	if err := decoder.Decode(&cfg); err != nil {
 		return nil, err
