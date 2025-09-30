@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -15,12 +16,21 @@ var installCmd = &cobra.Command{
 	Short: "Install (pull) a tool's container image",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Split original parameters
+		toolInfo := strings.SplitN(args[0], "@", 2)
+
+		// Parse tool info
+		toolName := toolInfo[0]
+		toolVer := "latest" // `latest` by dafault
+		if len(toolInfo) == 2 {
+			toolVer = toolInfo[1]
+		}
+
 		// `runtime` defined in `rootCmd`
-		installTool(runtime, args[0])
+		installTool(runtime, toolName, toolVer)
 	},
 }
-
-func installTool(runtime container.Runtime, toolName string) {
+func installTool(runtime container.Runtime, toolName string, toolVer string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -33,8 +43,8 @@ func installTool(runtime container.Runtime, toolName string) {
 		os.Exit(1)
 	}
 
-	if err := runtime.PullImage(tool.Image); err != nil {
-		fmt.Println("Error pulling image:", err)
+	if err := runtime.InstallTool(tool.Image, toolVer); err != nil {
+		fmt.Println("Error installing tool:", err)
 		os.Exit(1)
 	}
 
