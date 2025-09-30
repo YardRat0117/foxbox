@@ -4,26 +4,22 @@ import (
 	"github.com/YardRat0117/foxbox/src/types"
 )
 
-// ImageManager manages images, NOTHING to do with `tool`
-type ImageManager interface {
-	ImageExists(image string) (bool, error)
-	PullImage(image string) error
-	RemoveImage(image string) error
+// imageManager manages images, NOTHING to do with `tool`
+type imageManager interface {
+	checkImage(image string) (bool, error)
+	pullImage(image string) error
+	removeImage(image string) error
 }
 
-// Runner builds and conducts commands
-type Runner interface {
+// Toolmanager manages images, and calls ImageManagers to work
+type ToolManager interface {
+	InstallTool(toolName string, version string) error
 	RunTool(tool types.Tool, version string, args []string) error
-}
-
-// ToolInspector reflects tool info
-type ToolInspector interface {
 	CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error)
 }
 
 // Runtime represents the integrated interfaces
 type Runtime interface {
-	ImageManager
-	Runner
-	ToolInspector
+	imageManager
+	ToolManager
 }

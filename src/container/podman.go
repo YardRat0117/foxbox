@@ -23,8 +23,8 @@ func NewPodmanRuntime() Runtime {
 
 // --- ImageManager ---
 
-// ImageExists checks if the given image exists locally using Podman.
-func (p *PodmanRuntime) ImageExists(image string) (bool, error) {
+// CheckImage checks if the given image exists locally using Podman.
+func (p *PodmanRuntime) checkImage(image string) (bool, error) {
 	// Check Podman
 	if _, err := exec.LookPath("podman"); err != nil {
 		return false, fmt.Errorf("podman not found in PATH: %w", err)
@@ -62,10 +62,7 @@ func (p *PodmanRuntime) ImageExists(image string) (bool, error) {
 }
 
 // PullImage pulls the specified image using Podman.
-func (p *PodmanRuntime) PullImage(image string) error {
-	// Hint
-	fmt.Printf("Pulling image %s using podman...\n", image)
-
+func (p *PodmanRuntime) pullImage(image string) error {
 	// Build command `podman pull <image>`
 	cmd := exec.Command("podman", "pull", image)
 	// Stdout & Stderr redirected to OS
@@ -77,7 +74,7 @@ func (p *PodmanRuntime) PullImage(image string) error {
 }
 
 // RemoveImage removes the specified image using Podman.
-func (p *PodmanRuntime) RemoveImage(image string) error {
+func (p *PodmanRuntime) removeImage(image string) error {
 	// Hint
 	fmt.Printf("Removing image %s using podman...\n", image)
 
@@ -91,15 +88,56 @@ func (p *PodmanRuntime) RemoveImage(image string) error {
 	return cmd.Run()
 }
 
-// --- Runner ---
+// --- ToolManager ---
+
+// InstallTool pulls the corresponding image for required tool.
+func (p *PodmanRuntime) InstallTool(toolName string, version string) error {
+	image := fmt.Sprintf("%s:%s", toolName, version)
+
+	// Hint
+	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
+
+	return p.pullImage(image)
+}
 
 // RunTool runs the given tool inside a Podman container.
 func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) error {
-	// Build command with `buildCmd`
-	cmd, err := p.buildCmd(tool, version, args)
+	// Get current working directory (cwd)
+	cwd, err := os.Getwd()
 	if err != nil {
-		return err
+		return fmt.Errorf("Can't get current working directory: ", err)
 	}
+
+	// Build command `run --rm -i`
+	podmanArgs := []string{"run", "--rm", "-i"}
+
+	// Attached `-v <hostVol>` for directory mounting
+	for _, vol := range tool.Volumes {
+		hostVol := strings.ReplaceAll(vol, "$(pwd)", cwd)
+		podmanArgs = append(podmanArgs, "-v", hostVol)
+	}
+
+	// Attached `<image>:<version>` for image and tag, `latest` by default
+	image := tool.Image
+	if version != "" {
+		image = fmt.Sprintf("%s:%s", tool.Image, version)
+	}
+
+	// Attached `-w <workdir> <image> <entry>` for working directory etc.
+	podmanArgs = append(podmanArgs, "-w", tool.Workdir, image, tool.Entry)
+
+	// Attached other arguments
+	podmanArgs = append(podmanArgs, args...)
+
+	// Build the cmd
+	// `podman run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
+	// --rm : deprecate the container after termination
+	// -i : interactive, which enables stdin
+	// -v <hostVol> : mounting host directory for the container
+	// <image>:<version> : specified image and tag
+	// -w <workdir> : working directory in the container
+	// <image> <entry> : run the entry command
+	cmd := exec.Command("podman", podmanArgs...)
 	// Stdout & Stderr redirected to OS
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
