@@ -20,8 +20,16 @@ type ToolManager interface {
 	CleanTools(tools map[string]types.Tool) error
 }
 
+// Helper provides helper functions
+type Helper interface {
+	confirm(msg string) bool
+	splitImage(image string) (string, string)
+	getLocalImages() (map[string]map[string]struct{}, error)
+}
+
 // Runtime represents the integrated interfaces
 type Runtime interface {
 	imageManager
 	ToolManager
+	Helper
 }

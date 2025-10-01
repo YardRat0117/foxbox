@@ -14,27 +14,27 @@ import (
 // --- ToolManager ---
 
 // InstallTool pulls the corresponding image for required tool.
-func (p *PodmanRuntime) InstallTool(toolName string, version string) error {
+func (d *DockerRuntime) InstallTool(toolName string, version string) error {
 	image := fmt.Sprintf("%s:%s", toolName, version)
 	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
-	return p.pullImage(image)
+	return d.pullImage(image)
 }
 
 // RemoveTool removes the corresponding image for specified tool.
-func (p *PodmanRuntime) RemoveTool(toolName string, imgName string, version string) error {
+func (d *DockerRuntime) RemoveTool(toolName string, imgName string, version string) error {
 	image := fmt.Sprintf("%s:%s", imgName, version)
 
-	if !p.confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
+	if !d.confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
 		fmt.Println("Skipped: ", image)
 		return nil
 	}
 	fmt.Printf("Removing tool %s by removing image %s@%s...\n", toolName, image, version)
-	return p.removeImage(image)
+	return d.removeImage(image)
 }
 
-// RunTool runs the given tool inside a Podman container.
-func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) error {
-	podmanArgs := []string{"run", "--rm", "-i"}
+// RunTool runs the given tool inside a Docker container.
+func (d *DockerRuntime) RunTool(tool types.Tool, version string, args []string) error {
+	dockerArgs := []string{"run", "--rm", "-i"}
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -42,7 +42,7 @@ func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) 
 	}
 	for _, vol := range tool.Volumes {
 		hostVol := strings.ReplaceAll(vol, "$(pwd)", cwd)
-		podmanArgs = append(podmanArgs, "-v", hostVol)
+		dockerArgs = append(dockerArgs, "-v", hostVol)
 	}
 
 	image := tool.Image
@@ -50,26 +50,26 @@ func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) 
 		image = fmt.Sprintf("%s:%s", tool.Image, version)
 	}
 
-	podmanArgs = append(podmanArgs, "-w", tool.Workdir, image, tool.Entry)
-	podmanArgs = append(podmanArgs, args...)
+	dockerArgs = append(dockerArgs, "-w", tool.Workdir, image, tool.Entry)
+	dockerArgs = append(dockerArgs, args...)
 
-	// `podman run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
-	cmd := exec.Command("podman", podmanArgs...)
+	// `docker run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
+	cmd := exec.Command("docker", dockerArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-// CheckTools inspects the given tools and returns their status using Podman.
-func (p *PodmanRuntime) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
-	localImages, err := p.getLocalImages()
+// CheckTools inspects the given tools and returns their status using Docker.
+func (d *DockerRuntime) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
+	localImages, err := d.getLocalImages()
 	if err != nil {
 		return nil, err
 	}
 
 	status := make(map[string]types.ToolStatus)
 	for name, tool := range tools {
-		repo, tag := p.splitImage(tool.Image)
+		repo, tag := d.splitImage(tool.Image)
 		installed := false
 		localTags := []string{}
 
@@ -96,10 +96,10 @@ func (p *PodmanRuntime) CheckTools(tools map[string]types.Tool) (map[string]type
 }
 
 // CleanTools removes all installed images for configurated tools
-func (p *PodmanRuntime) CleanTools(tools map[string]types.Tool) error {
+func (d *DockerRuntime) CleanTools(tools map[string]types.Tool) error {
 	var errs []error
 
-	statuses, err := p.CheckTools(tools)
+	statuses, err := d.CheckTools(tools)
 	if err != nil {
 		return fmt.Errorf("check tools failed: %w", err)
 	}
@@ -109,10 +109,10 @@ func (p *PodmanRuntime) CleanTools(tools map[string]types.Tool) error {
 		if !ok {
 			continue
 		}
-		imgName, _ := p.splitImage(tool.Image)
+		imgName, _ := d.splitImage(tool.Image)
 
 		for _, tag := range st.LocalTags {
-			if err := p.RemoveTool(name, imgName, tag); err != nil {
+			if err := d.RemoveTool(name, imgName, tag); err != nil {
 				errs = append(errs, fmt.Errorf("failed to remove %s:%s: %w", name, tag, err))
 			}
 		}

@@ -23,8 +23,7 @@ var rootCmd = &cobra.Command{
 			runtime = container.NewPodmanRuntime()
 
 		case "docker":
-			fmt.Fprintln(os.Stderr, "[foxbox] runtime=docker not implemented yet, falling back to podman")
-			runtime = container.NewPodmanRuntime()
+			runtime = container.NewDockerRuntime()
 
 		case "api":
 			fmt.Fprintln(os.Stderr, "[foxbox] runtime=api not implemented yet, falling back to podman")
