@@ -61,8 +61,13 @@ foxbox remove gcc
 foxbox remove python@3.12
 ```
 
+5. Clean all installed tool
+```bash
+foxbox clean
+```
 
-5. Check version
+
+6. Check version
 
 ```bash
 foxbox version
@@ -84,11 +89,11 @@ Note: `$(pwd)` is the supported representation for current working directory in 
     - [x] List available tools in config file(`foxbox list`)
     - [x] Install tools/pull images (`foxbox install <tool>`)
     - [x] Support multiple versions (`foxbox python@3.9`)
-    - [ ] Manage tools 
+    - [x] Manage tools 
         - [x] Check installed tools (merged into `foxbox list`)
         - [x] Check tool tags (merged into `foxbox list`)
         - [x] Remove installed tools (`foxbox remove python@3.9`)
-        - [ ] Prune cached data (`foxbox prune`)
+        - [x] Clean all installed tools (`foxbox clean`)
     - [x] Check foxbox version (`foxbox version`)
     - [ ] Add Docker support
 - Reliability

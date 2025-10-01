@@ -17,6 +17,7 @@ type ToolManager interface {
 	RemoveTool(toolName string, version string) error
 	RunTool(tool types.Tool, version string, args []string) error
 	CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error)
+	CleanTools(tools map[string]types.Tool) error
 }
 
 // Runtime represents the integrated interfaces

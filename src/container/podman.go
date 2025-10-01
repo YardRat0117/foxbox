@@ -3,6 +3,7 @@ package container
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -104,6 +105,16 @@ func (p *PodmanRuntime) InstallTool(toolName string, version string) error {
 func (p *PodmanRuntime) RemoveTool(toolName string, version string) error {
 	image := fmt.Sprintf("%s:%s", toolName, version)
 
+	fmt.Printf("Sure to remove tool %s by removing image %s? [y/N]", toolName, image)
+
+	var input string
+	fmt.Scanln(&input)
+
+	if strings.ToLower(strings.TrimSpace(input)) != "y" {
+		fmt.Println("Skipped: ", image)
+		return nil
+	}
+
 	// Hint
 	fmt.Printf("Removing tool %s by removing image %s...\n", toolName, image)
 
@@ -154,8 +165,6 @@ func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) 
 	// Execute the command and return error info
 	return cmd.Run()
 }
-
-// --- ToolInspector ---
 
 // CheckTools inspects the given tools and returns their status using Podman.
 func (p *PodmanRuntime) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
@@ -212,6 +221,29 @@ func (p *PodmanRuntime) CheckTools(tools map[string]types.Tool) (map[string]type
 	}
 
 	return status, nil
+}
+
+// CleanTools removes all installed images for configurated tools
+func (p *PodmanRuntime) CleanTools(tools map[string]types.Tool) error {
+	var errs []error
+
+	statuses, err := p.CheckTools(tools)
+	if err != nil {
+		return fmt.Errorf("check tools failed: %w", err)
+	}
+
+	for name, st := range statuses {
+		for _, tag := range st.LocalTags {
+			if err := p.RemoveTool(name, tag); err != nil {
+				errs = append(errs, fmt.Errorf("failed to remove %s:%s: %w", name, tag, err))
+			}
+		}
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
 }
 
 // --- helpers ---

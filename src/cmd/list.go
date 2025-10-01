@@ -24,14 +24,14 @@ func listConfig(runtime container.Runtime) {
 	// Load Config
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Failed to load config:", err)
+		fmt.Println("Failed to load config: ", err)
 		os.Exit(1)
 	}
 
 	// Load installed tools
 	installed, err := runtime.CheckTools(cfg.Tools)
 	if err != nil {
-		fmt.Println("Error listing installed tools:", err)
+		fmt.Println("Error listing installed tools: ", err)
 		os.Exit(1)
 	}
 
