@@ -8,7 +8,7 @@ A lightweight CLI tool to run common development tools in containers. No need to
 
 - Run tools in containers with a single command
 - Auto-mount directory into the container
-- Supports Podman (Docker support coming soon)
+- Supports Podman (Docker support coming later)
 
 ---
 
@@ -96,6 +96,7 @@ Note: `$(pwd)` is the supported representation for current working directory in 
         - [x] Comments
         - [x] Refactor
     - [ ] Boot speed optimization
+        - [ ] Integrate with Podman REST API via Go bindings
     - [ ] Error hints
     - [ ] Logging
 - Vim Integration
@@ -103,6 +104,12 @@ Note: `$(pwd)` is the supported representation for current working directory in 
 - Community
     - [ ] Across-platform support (Linux/macOS/WSL/Windows)
     - [ ] Detailed docs, tutorials and wikis
+
+Current planned goals:
+
+1. Implement the `prune` command
+2. Turn to Podman REST API
+3. Add Docker Support
 
 ---
 
