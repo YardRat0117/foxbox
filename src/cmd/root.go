@@ -9,7 +9,7 @@ import (
 var runtime container.Runtime
 
 var rootCmd = &cobra.Command{
-	Use:   "foxbox <tool> [args...] -- [toolArgs...]",
+	Use:   "foxbox <cmd> -- [toolArgs...]",
 	Short: "Foxbox - lightweight tool runtime",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -27,4 +27,5 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(versionCmd)
 }

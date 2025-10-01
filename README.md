@@ -19,7 +19,7 @@ A lightweight CLI tool to run common development tools in containers. No need to
 ```bash
 git clone https://github.com/yardrat0117/foxbox.git
 cd foxbox
-go build -o foxbox ./src
+./build.sh
 ```
 
 2. Prepare Podman (e.g., via APT)
@@ -55,6 +55,12 @@ foxbox run gcc -- hello.c -o hello
 foxbox run python@3.12 -- hello.py
 ```
 
+4. Check version
+
+```bash
+foxbox version
+```
+
 ---
 
 ## Configuration
@@ -76,7 +82,7 @@ Note: `$(pwd)` is the supported representation for current working directory in 
         - [x] Check tool tags (merged into `foxbox list`)
         - [ ] Remove installed tools (`foxbox rm python@3.9`)
         - [ ] Prune cached data (`foxbox prune`)
-    - [ ] Check foxbox version (`foxbox version`)
+    - [x] Check foxbox version (`foxbox version`)
     - [ ] Add Docker support
 - Reliability
     - [ ] Code quality
