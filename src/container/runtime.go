@@ -14,7 +14,7 @@ type imageManager interface {
 // ToolManager manages images, and calls ImageManagers to work
 type ToolManager interface {
 	InstallTool(toolName string, version string) error
-	RemoveTool(toolName string, version string) error
+	RemoveTool(toolName string, imgName string, version string) error
 	RunTool(tool types.Tool, version string, args []string) error
 	CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error)
 	CleanTools(tools map[string]types.Tool) error

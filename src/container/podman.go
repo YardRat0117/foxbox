@@ -24,7 +24,7 @@ func NewPodmanRuntime() Runtime {
 
 // --- ImageManager ---
 
-// CheckImage checks if the given image exists locally using Podman.
+// checkImage checks if the given image exists locally using Podman.
 func (p *PodmanRuntime) checkImage(image string) (bool, error) {
 	// Check Podman
 	if _, err := exec.LookPath("podman"); err != nil {
@@ -62,7 +62,7 @@ func (p *PodmanRuntime) checkImage(image string) (bool, error) {
 	return false, fmt.Errorf("image inspect failed: %s", strings.TrimSpace(stderr.String()))
 }
 
-// PullImage pulls the specified image using Podman.
+// pullImage pulls the specified image using Podman.
 func (p *PodmanRuntime) pullImage(image string) error {
 	// Build command `podman pull <image>`
 	cmd := exec.Command("podman", "pull", image)
@@ -102,8 +102,8 @@ func (p *PodmanRuntime) InstallTool(toolName string, version string) error {
 }
 
 // RemoveTool removes the corresponding image for specified tool.
-func (p *PodmanRuntime) RemoveTool(toolName string, version string) error {
-	image := fmt.Sprintf("%s:%s", toolName, version)
+func (p *PodmanRuntime) RemoveTool(toolName string, imgName string, version string) error {
+	image := fmt.Sprintf("%s:%s", imgName, version)
 
 	fmt.Printf("Sure to remove tool %s by removing image %s? [y/N]", toolName, image)
 
@@ -233,8 +233,14 @@ func (p *PodmanRuntime) CleanTools(tools map[string]types.Tool) error {
 	}
 
 	for name, st := range statuses {
+		tool, ok := tools[name]
+		if !ok {
+			continue
+		}
+		imgName, _ := splitImage(tool.Image)
+
 		for _, tag := range st.LocalTags {
-			if err := p.RemoveTool(name, tag); err != nil {
+			if err := p.RemoveTool(name, imgName, tag); err != nil {
 				errs = append(errs, fmt.Errorf("failed to remove %s:%s: %w", name, tag, err))
 			}
 		}

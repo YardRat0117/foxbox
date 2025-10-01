@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -44,7 +44,7 @@ func removeTool(runtime container.Runtime, toolName string, toolVer string) {
 		os.Exit(1)
 	}
 
-	if err := runtime.RemoveTool(toolName, toolVer); err != nil {
+	if err := runtime.RemoveTool(toolName, tool.Image, toolVer); err != nil {
 		fmt.Printf("Error removing tool : ", err)
 		os.Exit(1)
 	}
