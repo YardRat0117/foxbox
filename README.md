@@ -55,7 +55,14 @@ foxbox run gcc -- hello.c -o hello
 foxbox run python@3.12 -- hello.py
 ```
 
-4. Check version
+4. Remove a specified tool
+```bash
+foxbox remove gcc
+foxbox remove python@3.12
+```
+
+
+5. Check version
 
 ```bash
 foxbox version
@@ -80,7 +87,7 @@ Note: `$(pwd)` is the supported representation for current working directory in 
     - [ ] Manage tools 
         - [x] Check installed tools (merged into `foxbox list`)
         - [x] Check tool tags (merged into `foxbox list`)
-        - [ ] Remove installed tools (`foxbox rm python@3.9`)
+        - [x] Remove installed tools (`foxbox remove python@3.9`)
         - [ ] Prune cached data (`foxbox prune`)
     - [x] Check foxbox version (`foxbox version`)
     - [ ] Add Docker support

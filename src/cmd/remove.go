@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -11,9 +11,9 @@ import (
 	"github.com/YardRat0117/foxbox/src/container"
 )
 
-var installCmd = &cobra.Command{
-	Use:   "install <tool>",
-	Short: "Install (pull) a tool's container image",
+var removeCmd = &cobra.Command{
+	Use:   "remove <tool>",
+	Short: "Remove a tool's container image",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Split original parameters
@@ -21,20 +21,20 @@ var installCmd = &cobra.Command{
 
 		// Parse tool info
 		toolName := toolInfo[0]
-		toolVer := "latest" // `latest` by dafault
-		if len(toolInfo) == 2 {
+		toolVer := "latest" // `latest` by default
+		if (len(toolInfo)) == 2 {
 			toolVer = toolInfo[1]
 		}
 
 		// `runtime` defined in `rootCmd`
-		installTool(runtime, toolName, toolVer)
+		removeTool(runtime, toolName, toolVer)
 	},
 }
 
-func installTool(runtime container.Runtime, toolName string, toolVer string) {
+func removeTool(runtime container.Runtime, toolName string, toolVer string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Failed to load config:", err)
+		fmt.Println("Failed to load config: ", err)
 		os.Exit(1)
 	}
 
@@ -44,10 +44,10 @@ func installTool(runtime container.Runtime, toolName string, toolVer string) {
 		os.Exit(1)
 	}
 
-	if err := runtime.InstallTool(tool.Image, toolVer); err != nil {
-		fmt.Println("Error installing tool:", err)
+	if err := runtime.RemoveTool(toolName, toolVer); err != nil {
+		fmt.Printf("Error removing tool : ", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Image %s installed successfully!\n", tool.Image)
+	fmt.Printf("Image %s removed successfully!\n", tool.Image)
 }

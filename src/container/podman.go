@@ -73,7 +73,7 @@ func (p *PodmanRuntime) pullImage(image string) error {
 	return cmd.Run()
 }
 
-// RemoveImage removes the specified image using Podman.
+// removeImage removes the specified image using Podman.
 func (p *PodmanRuntime) removeImage(image string) error {
 	// Hint
 	fmt.Printf("Removing image %s using podman...\n", image)
@@ -98,6 +98,16 @@ func (p *PodmanRuntime) InstallTool(toolName string, version string) error {
 	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
 
 	return p.pullImage(image)
+}
+
+// RemoveTool removes the corresponding image for specified tool.
+func (p *PodmanRuntime) RemoveTool(toolName string, version string) error {
+	image := fmt.Sprintf("%s:%s", toolName, version)
+
+	// Hint
+	fmt.Printf("Removing tool %s by removing image %s...\n", toolName, image)
+
+	return p.removeImage(image)
 }
 
 // RunTool runs the given tool inside a Podman container.
@@ -183,8 +193,11 @@ func (p *PodmanRuntime) CheckTools(tools map[string]types.Tool) (map[string]type
 				for t := range tags {
 					localTags = append(localTags, t)
 				}
+
 				// If tag matches (or defaults to "latest"), mark as installed
-				if tag == "" || tag == "latest" || tagInMap(tag, tags) {
+				if _, ok := tags[tag]; ok {
+					installed = true
+				} else if tag == "" || tag == "latest" {
 					installed = true
 				}
 				break
@@ -208,47 +221,4 @@ func splitImage(image string) (string, string) {
 		return strings.Join(parts[:len(parts)-1], ":"), parts[len(parts)-1]
 	}
 	return image, "latest"
-}
-
-func tagInMap(tag string, tags map[string]struct{}) bool {
-	_, ok := tags[tag]
-	return ok
-}
-
-func (p *PodmanRuntime) buildCmd(tool types.Tool, version string, args []string) (*exec.Cmd, error) {
-	// Get current working directory (cwd)
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	// Build command `run --rm -i`
-	podmanArgs := []string{"run", "--rm", "-i"}
-
-	// Attached `-v <hostVol>` for directory mounting
-	for _, vol := range tool.Volumes {
-		hostVol := strings.ReplaceAll(vol, "$(pwd)", cwd)
-		podmanArgs = append(podmanArgs, "-v", hostVol)
-	}
-
-	// Attached `<image>:<version>` for image and tag, `latest` by default
-	image := tool.Image
-	if version != "" {
-		image = fmt.Sprintf("%s:%s", tool.Image, version)
-	}
-
-	// Attached `-w <workdir> <image> <entry>` for working directory etc.
-	podmanArgs = append(podmanArgs, "-w", tool.Workdir, image, tool.Entry)
-
-	// Attached other arguments
-	podmanArgs = append(podmanArgs, args...)
-
-	// `podman run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
-	// --rm : deprecate the container after termination
-	// -i : interactive, which enables stdin
-	// -v <hostVol> : mounting host directory for the container
-	// <image>:<version> : specified image and tag
-	// -w <workdir> : working directory in the container
-	// <image> <entry> : run the entry command
-	return exec.Command("podman", podmanArgs...), nil
 }
