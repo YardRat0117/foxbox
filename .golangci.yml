@@ -6,5 +6,10 @@ linters:
     - ineffassign
     - gocyclo
     - gosec
+    - dupl
 run:
   timeout: 30s
+
+linters-settings:
+  dupl:
+    threshold: 80

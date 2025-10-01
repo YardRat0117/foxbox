@@ -9,6 +9,7 @@ type imageManager interface {
 	checkImage(image string) (bool, error)
 	pullImage(image string) error
 	removeImage(image string) error
+	getLocalImages() (map[string]map[string]struct{}, error)
 }
 
 // ToolManager manages images, and calls ImageManagers to work
@@ -20,16 +21,7 @@ type ToolManager interface {
 	CleanTools(tools map[string]types.Tool) error
 }
 
-// Helper provides helper functions
-type Helper interface {
-	confirm(msg string) bool
-	splitImage(image string) (string, string)
-	getLocalImages() (map[string]map[string]struct{}, error)
-}
-
-// Runtime represents the integrated interfaces
+// Runtime represents the interface where commands interact with container
 type Runtime interface {
-	imageManager
 	ToolManager
-	Helper
 }

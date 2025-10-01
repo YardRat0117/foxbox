@@ -11,30 +11,35 @@ import (
 	"github.com/YardRat0117/foxbox/src/types"
 )
 
-// --- ToolManager ---
+var _ ToolManager = (*CLIToolManager)(nil)
+
+type CLIToolManager struct {
+	RuntimeName string
+	ImageMgr    imageManager
+}
 
 // InstallTool pulls the corresponding image for required tool.
-func (d *DockerRuntime) InstallTool(toolName string, version string) error {
+func (t *CLIToolManager) InstallTool(toolName, version string) error {
 	image := fmt.Sprintf("%s:%s", toolName, version)
 	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
-	return d.pullImage(image)
+	return t.ImageMgr.pullImage(image)
 }
 
 // RemoveTool removes the corresponding image for specified tool.
-func (d *DockerRuntime) RemoveTool(toolName string, imgName string, version string) error {
+func (t *CLIToolManager) RemoveTool(toolName string, imgName string, version string) error {
 	image := fmt.Sprintf("%s:%s", imgName, version)
 
-	if !d.confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
+	if !Confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
 		fmt.Println("Skipped: ", image)
 		return nil
 	}
 	fmt.Printf("Removing tool %s by removing image %s@%s...\n", toolName, image, version)
-	return d.removeImage(image)
+	return t.ImageMgr.removeImage(image)
 }
 
-// RunTool runs the given tool inside a Docker container.
-func (d *DockerRuntime) RunTool(tool types.Tool, version string, args []string) error {
-	dockerArgs := []string{"run", "--rm", "-i"}
+// RunTool runs the given tool.
+func (t *CLIToolManager) RunTool(tool types.Tool, version string, args []string) error {
+	cmdArgs := []string{"run", "--rm", "-i"}
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -42,7 +47,7 @@ func (d *DockerRuntime) RunTool(tool types.Tool, version string, args []string) 
 	}
 	for _, vol := range tool.Volumes {
 		hostVol := strings.ReplaceAll(vol, "$(pwd)", cwd)
-		dockerArgs = append(dockerArgs, "-v", hostVol)
+		cmdArgs = append(cmdArgs, "-v", hostVol)
 	}
 
 	image := tool.Image
@@ -50,26 +55,27 @@ func (d *DockerRuntime) RunTool(tool types.Tool, version string, args []string) 
 		image = fmt.Sprintf("%s:%s", tool.Image, version)
 	}
 
-	dockerArgs = append(dockerArgs, "-w", tool.Workdir, image, tool.Entry)
-	dockerArgs = append(dockerArgs, args...)
+	cmdArgs = append(cmdArgs, "-w", tool.Workdir, image, tool.Entry)
+	cmdArgs = append(cmdArgs, args...)
 
-	// `docker run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
-	cmd := exec.Command("docker", dockerArgs...)
+	// `<RuntimeName> run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
+	// #nosec G204: parameters are split, and RUntimeName is controlled
+	cmd := exec.Command(t.RuntimeName, cmdArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-// CheckTools inspects the given tools and returns their status using Docker.
-func (d *DockerRuntime) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
-	localImages, err := d.getLocalImages()
+// CheckTools inspects the given tools and returns their status.
+func (t *CLIToolManager) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
+	localImages, err := t.ImageMgr.getLocalImages()
 	if err != nil {
 		return nil, err
 	}
 
 	status := make(map[string]types.ToolStatus)
 	for name, tool := range tools {
-		repo, tag := d.splitImage(tool.Image)
+		repo, tag := SplitImage(tool.Image)
 		installed := false
 		localTags := []string{}
 
@@ -96,10 +102,10 @@ func (d *DockerRuntime) CheckTools(tools map[string]types.Tool) (map[string]type
 }
 
 // CleanTools removes all installed images for configurated tools
-func (d *DockerRuntime) CleanTools(tools map[string]types.Tool) error {
+func (t *CLIToolManager) CleanTools(tools map[string]types.Tool) error {
 	var errs []error
 
-	statuses, err := d.CheckTools(tools)
+	statuses, err := t.CheckTools(tools)
 	if err != nil {
 		return fmt.Errorf("check tools failed: %w", err)
 	}
@@ -109,10 +115,10 @@ func (d *DockerRuntime) CleanTools(tools map[string]types.Tool) error {
 		if !ok {
 			continue
 		}
-		imgName, _ := d.splitImage(tool.Image)
+		imgName, _ := SplitImage(tool.Image)
 
 		for _, tag := range st.LocalTags {
-			if err := d.RemoveTool(name, imgName, tag); err != nil {
+			if err := t.RemoveTool(name, imgName, tag); err != nil {
 				errs = append(errs, fmt.Errorf("failed to remove %s:%s: %w", name, tag, err))
 			}
 		}
