@@ -13,7 +13,7 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Clean all installed container image",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		// `runtime` defined in `rootCmd`
 		cleanTools(runtime)
 	},
@@ -33,5 +33,5 @@ func cleanTools(runtime container.Runtime) {
 		os.Exit(1)
 	}
 
-	fmt.Println("Tools cleaned successfully!\n")
+	fmt.Println("Tools cleaned successfully!")
 }

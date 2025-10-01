@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Use:   "foxbox <cmd> -- [toolArgs...]",
 	Short: "Foxbox - lightweight tool runtime",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// Podman currently
 		runtime = container.NewPodmanRuntime()
 	},

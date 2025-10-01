@@ -15,7 +15,7 @@ var installCmd = &cobra.Command{
 	Use:   "install <tool>",
 	Short: "Install (pull) a tool's container image",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// Split original parameters
 		toolInfo := strings.SplitN(args[0], "@", 2)
 

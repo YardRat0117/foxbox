@@ -108,7 +108,9 @@ func (p *PodmanRuntime) RemoveTool(toolName string, imgName string, version stri
 	fmt.Printf("Sure to remove tool %s by removing image %s? [y/N]", toolName, image)
 
 	var input string
-	fmt.Scanln(&input)
+	if _, err := fmt.Scanln(&input); err != nil {
+		return err
+	}
 
 	if strings.ToLower(strings.TrimSpace(input)) != "y" {
 		fmt.Println("Skipped: ", image)
@@ -126,7 +128,7 @@ func (p *PodmanRuntime) RunTool(tool types.Tool, version string, args []string) 
 	// Get current working directory (cwd)
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("Can't get current working directory: ", err)
+		return fmt.Errorf("Can't get current working directory: %v", err)
 	}
 
 	// Build command `run --rm -i`

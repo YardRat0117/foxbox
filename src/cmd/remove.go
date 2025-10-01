@@ -15,7 +15,7 @@ var removeCmd = &cobra.Command{
 	Use:   "remove <tool>",
 	Short: "Remove a tool's container image",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// Split original parameters
 		toolInfo := strings.SplitN(args[0], "@", 2)
 
@@ -34,7 +34,7 @@ var removeCmd = &cobra.Command{
 func removeTool(runtime container.Runtime, toolName string, toolVer string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Failed to load config: ", err)
+		fmt.Printf("Failed to load config: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -45,7 +45,7 @@ func removeTool(runtime container.Runtime, toolName string, toolVer string) {
 	}
 
 	if err := runtime.RemoveTool(toolName, tool.Image, toolVer); err != nil {
-		fmt.Printf("Error removing tool : ", err)
+		fmt.Printf("Error removing tool: %v\n", err)
 		os.Exit(1)
 	}
 

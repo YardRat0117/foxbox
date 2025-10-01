@@ -1,0 +1,10 @@
+linters:
+  enable:
+    - govet
+    - revive
+    - staticcheck
+    - ineffassign
+    - gocyclo
+    - gosec
+run:
+  timeout: 30s

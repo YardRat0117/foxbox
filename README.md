@@ -112,9 +112,8 @@ Note: `$(pwd)` is the supported representation for current working directory in 
 
 Current planned goals:
 
-1. Implement the `prune` command
-2. Turn to Podman REST API
-3. Add Docker Support
+1. Turn to Podman REST API
+2. Add Docker Support
 
 ---
 
