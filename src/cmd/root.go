@@ -1,20 +1,44 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/YardRat0117/foxbox/src/container"
 )
 
+var runtimeOpt string
 var runtime container.Runtime
 
 var rootCmd = &cobra.Command{
 	Use:   "foxbox <cmd> -- [toolArgs...]",
 	Short: "Foxbox - lightweight tool runtime",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
+
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
-		// Podman currently
-		runtime = container.NewPodmanRuntime()
+		switch runtimeOpt {
+		case "podman":
+			runtime = container.NewPodmanRuntime()
+
+		case "docker":
+			fmt.Fprintln(os.Stderr, "[foxbox] runtime=docker not implemented yet, falling back to podman")
+			runtime = container.NewPodmanRuntime()
+
+		case "api":
+			fmt.Fprintln(os.Stderr, "[foxbox] runtime=api not implemented yet, falling back to podman")
+			runtime = container.NewPodmanRuntime()
+
+		case "podapi":
+			fmt.Fprintln(os.Stderr, "[foxbox] runtime=podapi not implemented yet, falling back to podman")
+			runtime = container.NewPodmanRuntime()
+
+		default:
+			fmt.Fprintf(os.Stderr, "[foxbox] unknown runtime=%s, falling back to podman\n", runtimeOpt)
+			runtime = container.NewPodmanRuntime()
+		}
+
 	},
 }
 
@@ -24,6 +48,13 @@ func Execute() error {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVar(
+		&runtimeOpt,
+		"runtime",
+		"podman",
+		"container runtime backend (podman | docker | api | podapi)",
+	)
+
 	rootCmd.AddCommand(installCmd)
 	rootCmd.AddCommand(removeCmd)
 	rootCmd.AddCommand(listCmd)
