@@ -60,8 +60,8 @@ foxbox run python@3.12 -- hello.py
 ## Configuration
 
 Default tools are provided in `config/default.yml`. 
-You can also DIY - if `~/.config/rbox.yml` is provided, this would override `config/default.yml`.
-Note: `$(pwd)` is the supported representation for current working directory in `rbox.yml`. Please adhere to this represetation!
+You can also DIY - if `~/.config/foxbox.yml` is provided, this would override `config/default.yml`.
+Note: `$(pwd)` is the supported representation for current working directory in `foxbox.yml`. Please adhere to this represetation!
 
 ---
 
@@ -80,8 +80,8 @@ Note: `$(pwd)` is the supported representation for current working directory in 
     - [ ] Add Docker support
 - Reliability
     - [ ] Code quality
-        - [ ] Comments
-        - [ ] Refactoring
+        - [x] Comments
+        - [x] Refactor
     - [ ] Boot speed optimization
     - [ ] Error hints
     - [ ] Logging

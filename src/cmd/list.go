@@ -36,7 +36,7 @@ func listConfig(runtime container.Runtime) {
 	}
 
 	// Constants for formatting output
-	const nameWidth, parenWidth, insWidth = 15, 15, 5
+	const nameWidth, parenWidth, insWidth = 15, 25, 5
 
 	fmt.Println("Configured tools:")
 	for name, tool := range cfg.Tools {
