@@ -1,6 +1,8 @@
 # foxbox
 
-A lightweight CLI tool to run common development tools in containers. No need to install compilers locally — you can just use `foxbox` and run commands in isolated containers.
+A lightweight CLI tool to run common development tools in containers. 
+
+No need to install compilers locally — simply use `foxbox` to run commands in isolated containers.
 
 ---
 
@@ -8,7 +10,8 @@ A lightweight CLI tool to run common development tools in containers. No need to
 
 - Run tools in containers with a single command
 - Auto-mount directory into the container
-- Supports Podman (Docker support coming later)
+- Supports Podman (Docker support coming soon)
+- Manage multiple versions of tools effortlessly
 
 ---
 
@@ -30,6 +33,10 @@ sudo apt install podman
 ```
 
 3. Ready to use!
+
+```bash
+foxbox version
+```
 
 ---
 
@@ -61,7 +68,7 @@ foxbox remove gcc
 foxbox remove python@3.12
 ```
 
-5. Clean all installed tool
+5. Clean all installed tools
 ```bash
 foxbox clean
 ```
@@ -77,43 +84,30 @@ foxbox version
 
 ## Configuration
 
-Default tools are provided in `config/default.yml`. 
-You can also DIY - if `~/.config/foxbox.yml` is provided, this would override `config/default.yml`.
-Note: `$(pwd)` is the supported representation for current working directory in `foxbox.yml`. Please adhere to this represetation!
+- Default tools:`config/default.yml` 
+- User override: `~/.config/foxbox.yml`
+> Note: Use `$(pwd)` to represent the current working directory in your configuration.
 
 ---
 
 ## Roadmap
 
-- Functionality
-    - [x] List available tools in config file(`foxbox list`)
-    - [x] Install tools/pull images (`foxbox install <tool>`)
-    - [x] Support multiple versions (`foxbox python@3.9`)
-    - [x] Manage tools 
-        - [x] Check installed tools (merged into `foxbox list`)
-        - [x] Check tool tags (merged into `foxbox list`)
-        - [x] Remove installed tools (`foxbox remove python@3.9`)
-        - [x] Clean all installed tools (`foxbox clean`)
+- Basic Functionality
+	- [x] Simply run tools (`foxbox run`)
+	- [x] Install tools (`foxbox install <tool>`)
+	- [x] Support multiple versions (`<tool>@<tag>`)
+    - [x] Check installed tools and tags (`foxbox list`)
+    - [x] Remove installed tools (`foxbox remove <tool>`)
+    - [x] Clean all installed tools (`foxbox clean`)
     - [x] Check foxbox version (`foxbox version`)
-    - [ ] Add Docker support
-- Reliability
-    - [ ] Code quality
-        - [x] Comments
-        - [x] Refactor
-    - [ ] Boot speed optimization
-        - [ ] Integrate with Podman REST API via Go bindings
-    - [ ] Error hints
-    - [ ] Logging
-- Vim Integration
-    - [ ] Vim plugin (planned for another project)
+- Advanced Functionality
+	- [ ] API-based Podman support (refactor)
+	- [ ] API-based Docker support (feature)
+	- [ ] Vim Plugin Integration (side-project)
 - Community
-    - [ ] Across-platform support (Linux/macOS/WSL/Windows)
-    - [ ] Detailed docs, tutorials and wikis
-
-Current planned goals:
-
-1. Turn to Podman REST API
-2. Add Docker Support
+    - [ ] Across-platform support (Linux/macOS/WSL)
+    - [ ] Tutorials
+    - [ ] Docs
 
 ---
 
