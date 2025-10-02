@@ -18,5 +18,5 @@ var versionCmd = &cobra.Command{
 
 func showVersion() {
 	// `Commit` is declared in package `main`
-	fmt.Printf("FoxBox Commit: %s\n", version.Commit)
+	fmt.Printf("FoxBox Commit: %s\nFoxbox Tag: %s\n", version.Commit, version.Tag)
 }
