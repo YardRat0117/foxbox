@@ -2,4 +2,4 @@ package version
 
 // Commit denotes the git commit for current build
 var Commit = "Unknown"
-var Tag = "v0.5.0"
+var Tag = "Dev Build"
