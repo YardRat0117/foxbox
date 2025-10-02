@@ -76,19 +76,30 @@ func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]typ
 	status := make(map[string]types.ToolStatus)
 	for name, tool := range tools {
 		repo, tag := SplitImage(tool.Image)
+		repoBase := path.Base(repo)
 		installed := false
 		localTags := []string{}
 
 		for localRepo, tags := range localImages {
-			if path.Base(localRepo) == repo {
+			localBase := path.Base(localRepo)
+
+			if localRepo == tool.Image || localBase == repoBase {
 				for t := range tags {
 					localTags = append(localTags, t)
 				}
 
-				if _, ok := tags[tag]; ok || tag == "" || tag == "latest" {
-					installed = true
+				checkTags := []string{}
+				if tag != "" {
+					checkTags = append(checkTags, tag)
 				}
-				break
+				checkTags = append(checkTags, "latest")
+
+				for _, t := range checkTags {
+					if _, ok := tags[t]; ok {
+						installed = true
+						break // break checkTags
+					}
+				}
 			}
 		}
 
