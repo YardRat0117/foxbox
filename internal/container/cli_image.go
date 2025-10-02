@@ -11,16 +11,16 @@ import (
 	"time"
 )
 
-var _ imageManager = (*CLIImageManager)(nil)
+var _ imageManager = (*cliImageManager)(nil)
 
-type CLIImageManager struct {
-	RuntimeName string
+type cliImageManager struct {
+	runtimeName string
 }
 
 // checkImage checks if the given image exists locally.
-func (i *CLIImageManager) checkImage(image string) (bool, error) {
-	if _, err := exec.LookPath(i.RuntimeName); err != nil {
-		return false, fmt.Errorf("%s not found in PATH: %w", i.RuntimeName, err)
+func (i *cliImageManager) checkImage(image string) (bool, error) {
+	if _, err := exec.LookPath(i.runtimeName); err != nil {
+		return false, fmt.Errorf("%s not found in PATH: %w", i.runtimeName, err)
 	}
 
 	// Quit if timed out
@@ -35,7 +35,7 @@ func (i *CLIImageManager) checkImage(image string) (bool, error) {
 
 	// Build command `image inspect`
 	// #nosec G204: image name is validated by verifyImage
-	cmd := exec.CommandContext(ctx, i.RuntimeName, "image", "inspect", image)
+	cmd := exec.CommandContext(ctx, i.runtimeName, "image", "inspect", image)
 	// Discard stdout, reserve stderr
 	cmd.Stdout = io.Discard
 	var stderr bytes.Buffer
@@ -65,7 +65,7 @@ func (i *CLIImageManager) checkImage(image string) (bool, error) {
 }
 
 // pullImage pulls the specified image using Podman.
-func (i *CLIImageManager) pullImage(image string) error {
+func (i *cliImageManager) pullImage(image string) error {
 	// Verify image in case injection attack
 	if err := verifyImage(image); err != nil {
 		return err
@@ -73,7 +73,7 @@ func (i *CLIImageManager) pullImage(image string) error {
 
 	// Build command `podman pull <image>`
 	// #nosec G204: image name is validated by verifyImage
-	cmd := exec.Command(i.RuntimeName, "pull", image)
+	cmd := exec.Command(i.runtimeName, "pull", image)
 	// Stdout & Stderr redirected to OS
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -83,9 +83,9 @@ func (i *CLIImageManager) pullImage(image string) error {
 }
 
 // removeImage removes the specified image using Podman.
-func (i *CLIImageManager) removeImage(image string) error {
+func (i *cliImageManager) removeImage(image string) error {
 	// Hint
-	fmt.Printf("Removing image %s using %s...\n", image, i.RuntimeName)
+	fmt.Printf("Removing image %s using %s...\n", image, i.runtimeName)
 
 	// Verify image in case injection attack
 	if err := verifyImage(image); err != nil {
@@ -94,7 +94,7 @@ func (i *CLIImageManager) removeImage(image string) error {
 
 	// Build command `podman rmi -f <image>`
 	// #nosec G204: image name is validated by verifyImage
-	cmd := exec.Command(i.RuntimeName, "rmi", "-f", image)
+	cmd := exec.Command(i.runtimeName, "rmi", "-f", image)
 	// Stdout & Stderr redirected to OS
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -104,9 +104,9 @@ func (i *CLIImageManager) removeImage(image string) error {
 }
 
 // GetLocalImages retrieves pulled images
-func (i *CLIImageManager) getLocalImages() (map[string]map[string]struct{}, error) {
+func (i *cliImageManager) getLocalImages() (map[string]map[string]struct{}, error) {
 	// #nosec G204: fixed args, safe to execute
-	cmd := exec.Command(i.RuntimeName, "images", "--format", "{{.Repository}}:{{.Tag}}")
+	cmd := exec.Command(i.runtimeName, "images", "--format", "{{.Repository}}:{{.Tag}}")
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package cmd
+package command
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/YardRat0117/foxbox/src/container"
+	"github.com/YardRat0117/foxbox/internal/container"
 )
 
 var runtimeOpt string

@@ -1,11 +1,11 @@
-package cmd
+package command
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/YardRat0117/foxbox/src/version"
+	"github.com/YardRat0117/foxbox/internal/version"
 )
 
 var versionCmd = &cobra.Command{

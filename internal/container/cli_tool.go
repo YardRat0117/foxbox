@@ -8,25 +8,25 @@ import (
 	"path"
 	"strings"
 
-	"github.com/YardRat0117/foxbox/src/types"
+	"github.com/YardRat0117/foxbox/internal/types"
 )
 
-var _ ToolManager = (*CLIToolManager)(nil)
+var _ toolManager = (*cliToolManager)(nil)
 
-type CLIToolManager struct {
-	RuntimeName string
-	ImageMgr    imageManager
+type cliToolManager struct {
+	runtimeName string
+	imageMgr    imageManager
 }
 
-// InstallTool pulls the corresponding image for required tool.
-func (t *CLIToolManager) InstallTool(toolName, version string) error {
+// installTool pulls the corresponding image for required tool.
+func (t *cliToolManager) installTool(toolName, version string) error {
 	image := fmt.Sprintf("%s:%s", toolName, version)
 	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
-	return t.ImageMgr.pullImage(image)
+	return t.imageMgr.pullImage(image)
 }
 
-// RemoveTool removes the corresponding image for specified tool.
-func (t *CLIToolManager) RemoveTool(toolName string, imgName string, version string) error {
+// removeTool removes the corresponding image for specified tool.
+func (t *cliToolManager) removeTool(toolName string, imgName string, version string) error {
 	image := fmt.Sprintf("%s:%s", imgName, version)
 
 	if !Confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
@@ -34,11 +34,11 @@ func (t *CLIToolManager) RemoveTool(toolName string, imgName string, version str
 		return nil
 	}
 	fmt.Printf("Removing tool %s by removing image %s@%s...\n", toolName, image, version)
-	return t.ImageMgr.removeImage(image)
+	return t.imageMgr.removeImage(image)
 }
 
-// RunTool runs the given tool.
-func (t *CLIToolManager) RunTool(tool types.Tool, version string, args []string) error {
+// runTool runs the given tool.
+func (t *cliToolManager) runTool(tool types.Tool, version string, args []string) error {
 	cmdArgs := []string{"run", "--rm", "-i"}
 
 	cwd, err := os.Getwd()
@@ -60,15 +60,15 @@ func (t *CLIToolManager) RunTool(tool types.Tool, version string, args []string)
 
 	// `<RuntimeName> run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
 	// #nosec G204: parameters are split, and RUntimeName is controlled
-	cmd := exec.Command(t.RuntimeName, cmdArgs...)
+	cmd := exec.Command(t.runtimeName, cmdArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-// CheckTools inspects the given tools and returns their status.
-func (t *CLIToolManager) CheckTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
-	localImages, err := t.ImageMgr.getLocalImages()
+// checkTools inspects the given tools and returns their status.
+func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
+	localImages, err := t.imageMgr.getLocalImages()
 	if err != nil {
 		return nil, err
 	}
@@ -101,11 +101,11 @@ func (t *CLIToolManager) CheckTools(tools map[string]types.Tool) (map[string]typ
 	return status, nil
 }
 
-// CleanTools removes all installed images for configurated tools
-func (t *CLIToolManager) CleanTools(tools map[string]types.Tool) error {
+// cleanTools removes all installed images for configurated tools
+func (t *cliToolManager) cleanTools(tools map[string]types.Tool) error {
 	var errs []error
 
-	statuses, err := t.CheckTools(tools)
+	statuses, err := t.checkTools(tools)
 	if err != nil {
 		return fmt.Errorf("check tools failed: %w", err)
 	}
@@ -118,7 +118,7 @@ func (t *CLIToolManager) CleanTools(tools map[string]types.Tool) error {
 		imgName, _ := SplitImage(tool.Image)
 
 		for _, tag := range st.LocalTags {
-			if err := t.RemoveTool(name, imgName, tag); err != nil {
+			if err := t.removeTool(name, imgName, tag); err != nil {
 				errs = append(errs, fmt.Errorf("failed to remove %s:%s: %w", name, tag, err))
 			}
 		}

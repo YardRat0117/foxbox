@@ -6,7 +6,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/YardRat0117/foxbox/src/types"
+	"github.com/YardRat0117/foxbox/internal/types"
 )
 
 // LoadConfig allows subcmds to load config from preset config files.
