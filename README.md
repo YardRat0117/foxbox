@@ -102,7 +102,7 @@ foxbox version
     - [x] Check foxbox version (`foxbox version`)
 - Advanced Functionality
     - [x] Podman runtime support
-    - [ ] Docker runtime support
+    - [x] Docker runtime support
     - [ ] General API runtime support
     - [ ] Libpod API runtime support
 	- [ ] Vim Plugin Integration (side-project)
