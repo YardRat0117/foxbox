@@ -101,10 +101,11 @@ foxbox version
     - [x] Clean all installed tools (`foxbox clean`)
     - [x] Check foxbox version (`foxbox version`)
 - Advanced Functionality
-    - [x] Podman runtime support
-    - [x] Docker runtime support
-    - [ ] General API runtime support
-    - [ ] Libpod API runtime support
+    - [x] Podman CLI support
+    - [x] Docker CLI support
+    - [x] Docker Engine API support
+    - [ ] Podman Docker API support
+    - [ ] Podman Libpod API support
 	- [ ] Vim Plugin Integration (side-project)
 - Community
     - [ ] Across-platform support (Linux/macOS/WSL)
