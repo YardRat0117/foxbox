@@ -4,29 +4,26 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
 	"github.com/YardRat0117/foxbox/internal/types"
 )
 
-var _ toolManager = (*cliToolManager)(nil)
-
-type cliToolManager struct {
-	runtimeName string
-	imageMgr    imageManager
+// toolManager manages the service logic, and calls ImageManagers to execute on actuall CRUD stuff
+type toolManager struct {
+	rt runtimeManager
 }
 
 // installTool pulls the corresponding image for required tool.
-func (t *cliToolManager) installTool(toolName, version string) error {
+func (t *toolManager) installTool(toolName, version string) error {
 	image := fmt.Sprintf("%s:%s", toolName, version)
 	fmt.Printf("Installing tool %s by pulling image %s...\n", toolName, image)
-	return t.imageMgr.pullImage(image)
+	return t.rt.pullImage(image)
 }
 
 // removeTool removes the corresponding image for specified tool.
-func (t *cliToolManager) removeTool(toolName string, imgName string, version string) error {
+func (t *toolManager) removeTool(toolName string, imgName string, version string) error {
 	image := fmt.Sprintf("%s:%s", imgName, version)
 
 	if !Confirm(fmt.Sprintf("Sure to remove tool %s by removing image %s@%s?", toolName, imgName, version)) {
@@ -34,41 +31,37 @@ func (t *cliToolManager) removeTool(toolName string, imgName string, version str
 		return nil
 	}
 	fmt.Printf("Removing tool %s by removing image %s@%s...\n", toolName, image, version)
-	return t.imageMgr.removeImage(image)
+	return t.rt.removeImage(image)
 }
 
 // runTool runs the given tool.
-func (t *cliToolManager) runTool(tool types.Tool, version string, args []string) error {
-	cmdArgs := []string{"run", "--rm", "-i"}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("Can't get current working directory: %v", err)
-	}
-	for _, vol := range tool.Volumes {
-		hostVol := strings.ReplaceAll(vol, "$(pwd)", cwd)
-		cmdArgs = append(cmdArgs, "-v", hostVol)
-	}
-
+func (t *toolManager) runTool(tool types.Tool, version string, args []string) error {
 	image := tool.Image
 	if version != "" {
 		image = fmt.Sprintf("%s:%s", tool.Image, version)
 	}
 
-	cmdArgs = append(cmdArgs, "-w", tool.Workdir, image, tool.Entry)
-	cmdArgs = append(cmdArgs, args...)
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Can't get current working directory: %v", err)
+	}
+	volumes := make([]string, len(tool.Volumes))
+	for i, vol := range tool.Volumes {
+		volumes[i] = strings.ReplaceAll(vol, "$(pwd)", cwd)
+	}
 
-	// `<RuntimeName> run --rm -i -v <hostVol> <image>:<version> -w <workdir> <image> <entry>`
-	// #nosec G204: parameters are split, and RUntimeName is controlled
-	cmd := exec.Command(t.runtimeName, cmdArgs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return t.rt.runImage(
+		image,
+		tool.Entry,
+		tool.Workdir,
+		volumes,
+		args,
+	)
 }
 
 // checkTools inspects the given tools and returns their status.
-func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
-	localImages, err := t.imageMgr.getLocalImages()
+func (t *toolManager) checkTools(tools map[string]types.Tool) (map[string]types.ToolStatus, error) {
+	localImages, err := t.rt.localImages()
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +73,10 @@ func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]typ
 		installed := false
 		localTags := []string{}
 
-		for localRepo, tags := range localImages {
+		for localRepo, toolStatus := range localImages {
 			localBase := path.Base(localRepo)
-
 			if localRepo == tool.Image || localBase == repoBase {
-				for t := range tags {
-					localTags = append(localTags, t)
-				}
-
+				localTags = append(localTags, toolStatus.LocalTags...)
 				checkTags := []string{}
 				if tag != "" {
 					checkTags = append(checkTags, tag)
@@ -95,9 +84,14 @@ func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]typ
 				checkTags = append(checkTags, "latest")
 
 				for _, t := range checkTags {
-					if _, ok := tags[t]; ok {
-						installed = true
-						break // break checkTags
+					for _, localTag := range toolStatus.LocalTags {
+						if t == localTag {
+							installed = true
+							break
+						}
+					}
+					if installed {
+						break
 					}
 				}
 			}
@@ -113,7 +107,7 @@ func (t *cliToolManager) checkTools(tools map[string]types.Tool) (map[string]typ
 }
 
 // cleanTools removes all installed images for configurated tools
-func (t *cliToolManager) cleanTools(tools map[string]types.Tool) error {
+func (t *toolManager) cleanTools(tools map[string]types.Tool) error {
 	var errs []error
 
 	statuses, err := t.checkTools(tools)

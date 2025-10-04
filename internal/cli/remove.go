@@ -26,12 +26,12 @@ var removeCmd = &cobra.Command{
 			toolVer = toolInfo[1]
 		}
 
-		// `runtime` defined in `rootCmd`
-		removeTool(runtime, toolName, toolVer)
+		// `panel` defined in `rootCmd`
+		removeTool(panel, toolName, toolVer)
 	},
 }
 
-func removeTool(runtime container.Runtime, toolName string, toolVer string) {
+func removeTool(panel *container.Panel, toolName string, toolVer string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("Failed to load config: %v\n", err)
@@ -44,7 +44,7 @@ func removeTool(runtime container.Runtime, toolName string, toolVer string) {
 		os.Exit(1)
 	}
 
-	if err := runtime.RemoveTool(toolName, tool.Image, toolVer); err != nil {
+	if err := panel.RemoveTool(toolName, tool.Image, toolVer); err != nil {
 		fmt.Printf("Error removing tool: %v\n", err)
 		os.Exit(1)
 	}

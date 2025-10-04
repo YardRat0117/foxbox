@@ -14,12 +14,12 @@ var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Clean all installed container image",
 	Run: func(_ *cobra.Command, _ []string) {
-		// `runtime` defined in `rootCmd`
-		cleanTools(runtime)
+		// `panel` defined in `rootCmd`
+		cleanTools(panel)
 	},
 }
 
-func cleanTools(runtime container.Runtime) {
+func cleanTools(panel *container.Panel) {
 	// Load Config
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -28,7 +28,7 @@ func cleanTools(runtime container.Runtime) {
 	}
 
 	// Delete all tools
-	if err := runtime.CleanTools(cfg.Tools); err != nil {
+	if err := panel.CleanTools(cfg.Tools); err != nil {
 		fmt.Println("Error cleaning installed tools: ", err)
 		os.Exit(1)
 	}

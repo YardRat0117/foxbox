@@ -35,3 +35,13 @@ func verifyImage(image string) error {
 	}
 	return nil
 }
+
+var entryRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+
+// verifyEntry checks whether the given entry command is valid
+func verifyEntry(entry string) error {
+    if !entryRegex.MatchString(entry) {
+        return fmt.Errorf("invalid entry command: %s", entry)
+    }
+    return nil
+}

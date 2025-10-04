@@ -15,12 +15,12 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all configured tools status",
 	Run: func(_ *cobra.Command, _ []string) {
-		// `runtime` defined in `rootCmd`
-		listConfig(runtime)
+		// `panel` defined in `rootCmd`
+		listConfig(panel)
 	},
 }
 
-func listConfig(runtime container.Runtime) {
+func listConfig(panel *container.Panel) {
 	// Load Config
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -29,7 +29,7 @@ func listConfig(runtime container.Runtime) {
 	}
 
 	// Load installed tools
-	installed, err := runtime.CheckTools(cfg.Tools)
+	installed, err := panel.CheckTools(cfg.Tools)
 	if err != nil {
 		fmt.Println("Error listing installed tools: ", err)
 		os.Exit(1)
@@ -43,10 +43,12 @@ func listConfig(runtime container.Runtime) {
 		s, exists := installed[name]
 
 		// Installation status
+		statusWidth := len("[not installed]")
 		status := "[not installed]"
 		if exists && s.Installed {
-			status = "[Installed]" + strings.Repeat(" ", insWidth)
+			status = "[Installed]"
 		}
+		status = fmt.Sprintf("%-*s", statusWidth, status)
 
 		// Tags
 		tags := ""

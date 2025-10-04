@@ -9,36 +9,36 @@ import (
 	"github.com/YardRat0117/foxbox/internal/container"
 )
 
-var runtimeOpt string
-var runtime container.Runtime
+var panelOpt string
+var panel *container.Panel
 
 var rootCmd = &cobra.Command{
 	Use:   "foxbox <cmd> -- [toolArgs...]",
-	Short: "Foxbox - lightweight tool runtime",
+	Short: "Foxbox - lightweight tool panel",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
 
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
-		switch runtimeOpt {
+		switch panelOpt {
 		case "podman":
-			runtime = container.NewPodmanRuntime()
+			panel = container.NewPodmanPanel()
 
 		case "docker":
-			runtime = container.NewDockerRuntime()
+			panel = container.NewDockerPanel()
 
 		case "podman-api":
-			fmt.Fprintln(os.Stderr, "[foxbox] runtime=podman-api not implemented yet, falling back to podman")
-			runtime = container.NewPodmanRuntime()
+			fmt.Fprintln(os.Stderr, "[foxbox] panel=podman-api not implemented yet, falling back to podman")
+			panel = container.NewPodmanPanel()
 
 		case "docker-api":
-			fmt.Fprintln(os.Stderr, "[foxbox] runtime=docker-api not implemented yet, falling back to podman")
+			panel = container.NewDockerAPIPanel()
 
 		case "podman-native":
-			fmt.Fprintln(os.Stderr, "[foxbox] runtime=podman-native not implemented yet, falling back to podman")
-			runtime = container.NewPodmanRuntime()
+			fmt.Fprintln(os.Stderr, "[foxbox] panel=podman-native not implemented yet, falling back to podman")
+			panel = container.NewPodmanPanel()
 
 		default:
-			fmt.Fprintf(os.Stderr, "[foxbox] unknown runtime=%s, falling back to podman\n", runtimeOpt)
-			runtime = container.NewPodmanRuntime()
+			fmt.Fprintf(os.Stderr, "[foxbox] unknown panel=%s, falling back to podman\n", panelOpt)
+			panel = container.NewPodmanPanel()
 		}
 
 	},
@@ -51,10 +51,10 @@ func Execute() error {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(
-		&runtimeOpt,
-		"runtime",
+		&panelOpt,
+		"panel",
 		"podman",
-		"container runtime backend (podman | docker | api | podapi)",
+		"container panel backend (podman | docker | api | podapi)",
 	)
 
 	rootCmd.AddCommand(installCmd)

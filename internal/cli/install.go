@@ -26,12 +26,12 @@ var installCmd = &cobra.Command{
 			toolVer = toolInfo[1]
 		}
 
-		// `runtime` defined in `rootCmd`
-		installTool(runtime, toolName, toolVer)
+		// `panel` defined in `rootCmd`
+		installTool(panel, toolName, toolVer)
 	},
 }
 
-func installTool(runtime container.Runtime, toolName string, toolVer string) {
+func installTool(panel *container.Panel, toolName string, toolVer string) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Failed to load config:", err)
@@ -44,7 +44,7 @@ func installTool(runtime container.Runtime, toolName string, toolVer string) {
 		os.Exit(1)
 	}
 
-	if err := runtime.InstallTool(tool.Image, toolVer); err != nil {
+	if err := panel.InstallTool(tool.Image, toolVer); err != nil {
 		fmt.Println("Error installing tool:", err)
 		os.Exit(1)
 	}

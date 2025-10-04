@@ -1,4 +1,11 @@
 tools:
+  hello:
+    image: hello-world
+    entry: /hello
+    workdir: /work
+    volumes:
+      - $(pwd):/work
+
   gcc:
     image: gcc
     entry: gcc
