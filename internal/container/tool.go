@@ -1,6 +1,7 @@
 package container
 
 import (
+	"slices"
 	"errors"
 	"fmt"
 	"os"
@@ -84,12 +85,9 @@ func (t *toolManager) checkTools(tools map[string]types.Tool) (map[string]types.
 				checkTags = append(checkTags, "latest")
 
 				for _, t := range checkTags {
-					for _, localTag := range toolStatus.LocalTags {
-						if t == localTag {
+					if slices.Contains(toolStatus.LocalTags, t) {
 							installed = true
-							break
 						}
-					}
 					if installed {
 						break
 					}
