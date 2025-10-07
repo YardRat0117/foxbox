@@ -4,6 +4,8 @@ import (
 	"github.com/YardRat0117/foxbox/internal/types"
 )
 
+var _ PanelInterface = (*Panel)(nil)
+
 type Panel struct {
 	toolManager *toolManager
 }
