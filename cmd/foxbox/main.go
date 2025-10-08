@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/YardRat0117/foxbox/internal/cli"
+	"github.com/YardRat0117/foxbox/internal/command"
 )
 
 func main() {
