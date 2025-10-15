@@ -22,7 +22,7 @@ No need to install compilers locally — simply use `foxbox` to run commands in 
 ```bash
 git clone https://github.com/yardrat0117/foxbox.git
 cd foxbox
-./build.sh
+make # or `make build`, if you don't want compression with UPX
 ```
 
 2. Prepare Podman (e.g., via APT)
