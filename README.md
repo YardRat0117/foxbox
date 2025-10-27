@@ -1,116 +1,137 @@
-# foxbox
+# Foxbox
 
-A lightweight CLI tool to run common development tools in containers. 
+[English](./README.md) | [中文](./README_zh.md)
 
-No need to install compilers locally — simply use `foxbox` to run commands in isolated containers.
+## What is Foxbox
+
+Foxbox is a Go-based, lightweight CLI tool for running development tools inside containers.
+
+Though originally designed for compilers like `gcc` and `clang`, it now works great with almost any CLI tool.
+
+As the name suggests, you can simply fetch a "box" and launch your tasks instantly - clean, isolated, and ready to **go**.
 
 ---
 
-## Features
+## Key Features
 
-- Run tools in containers with a single command
-- Auto-mount directory into the container
-- Supports Podman (Docker support coming soon)
-- Manage multiple versions of tools effortlessly
+- **Reproducible and isolated environments**
+  Run CLI-based tools in clean, isolated and reproducible containers - without any extra local installation.
+
+- **Simplified container interaction**
+  Enjoy containerized workflows without dealing with complex container arguments - even if you aren't a DevOps expert.
+
+- **Automated environment management**
+  Forget about chores like version control and directory mounting - Foxbox handles them for you.
+
+---
+
+## How Foxbox works
+
+Foxbox originates from an alias:
+
+```shell
+alias c_gcc ='podman run -it --rm -v .:/workspace -w /workspace gcc:latest gcc'
+```
+
+And it builds upon this idea - **wrapping containerized tools behind concise commands**, with better usability and automation.
+
+In essence, Foxbox does NOT manage the container by itself - it simply reads your command, translate it into the proper container arguments, and invokes the underlying tools to work - because we believes in the experts who built them.
 
 ---
 
 ## Installation
 
+You can install Foxbox in two ways:
+
 1. Build from source
 
-```bash
+You can simply clone the repo and build it locally.
+
+```shell
 git clone https://github.com/yardrat0117/foxbox.git
 cd foxbox
-make # or `make build`, if you don't want compression with UPX
+make build
+```
+The `foxbox` binary will be placed under the `bin` directory in the repo.
+
+Remember to move it somewhere in your `$PATH`.
+
+> Note: if you care about binary size, try `make` for additional [UPX](https://upx.github.io/)-based compression. This step is optional, though.
+
+2. Install using Go
+
+If you already have Go installed, you can simply install it directly via Go.
+
+```shell
+go install github.com/YardRat0117/fo0xbox@latest
 ```
 
-2. Prepare Podman (e.g., via APT)
+The `foxbox` binary will be installed into your `$GOBIN` (typically `~/go/bin`, depending on your Go configuration).
 
-```bash
-sudo apt update
-sudo apt install podman
-```
-
-3. Ready to use!
-
-```bash
-foxbox version
-```
+Note: official Go module releases may lag slightly behind the latest source tags.
 
 ---
 
 ## Usage
 
-1. List all configured tools
+Before using Foxbox, you need to "configure" tools to run later.
 
-```bash
-foxbox list
-```
+This is done through a YAML file named `foxbox.yml`, located under your config directory `~/.config` dir.
 
-2. Install a configured tool
+An example is provided in `configs/demo.yml`. And here's these fileds explanation:
+| Field         | Description                                                     |
+| :------------ | :-------------------------------------------------------------- |
+| `tools`       | The root section containing all the tools for Foxbox.           |
+| `<tool-name>` | A user-defined alias for the tool                               |
+| `image`       | The container image name or tag to use.                         |
+| `entry`       | The entrypoint command to run. (most of cases the tool command) |
+| `workdir`     | The working directory inside the container. (`/work` suggested) |
+| `volumes`     | A list of host-directory mounts. (`$(pwd):/work` suggested)     |
 
-```bash
-foxbox install gcc
-foxbox install python@3.12
-```
+Besides, Foxbox provides user-friendly commands to use:
 
-3. Run a specified tool
+1. `list` - List all configured tools
 
-```bash
-foxbox run gcc -- hello.c -o hello
-foxbox run python@3.12 -- hello.py
-```
+2. `install` - Install a configured tool
 
-4. Remove a specified tool
-```bash
-foxbox remove gcc
-foxbox remove python@3.12
-```
+3. `run` - Run a specified tool
 
-5. Clean all installed tools
-```bash
-foxbox clean
-```
+4. `remove` - Remove a specified tool
 
+5. `clean` - Clean all configured and installed tools
 
-6. Check version
+6. `version` - Check version
 
-```bash
-foxbox version
-```
+You can try `foxbox <command> --help` for detailed help.
 
 ---
 
-## Configuration
+## Development Roadmap
 
-- Default tools:`config/default.yml` 
-- User override: `~/.config/foxbox.yml`
-> Note: Use `$(pwd)` to represent the current working directory in your configuration.
+> Note: Foxbox is a solo project, launched and maintained independently.
+> As a result, progress - both in adding new features and fixing bugs - may be slower than those community-driven projects.
+> This roadmap may change or expand over time, so if you'd like to help out (I'd really appreciate it!), feel free to check back regularly.
 
----
-
-## Roadmap
-
-- Basic Functionality
-	- [x] Simply run tools (`foxbox run`)
-	- [x] Install tools (`foxbox install <tool>`)
-	- [x] Support multiple versions (`<tool>@<tag>`)
-    - [x] Check installed tools and tags (`foxbox list`)
-    - [x] Remove installed tools (`foxbox remove <tool>`)
-    - [x] Clean all installed tools (`foxbox clean`)
-    - [x] Check foxbox version (`foxbox version`)
-- Advanced Functionality
+- Core Functionality
+    - [x] Basic commands (`run`, `install`, `remove` and etc.)
+    - [x] Tool version control support (`<tool>@<tag>`)
     - [x] Podman CLI support
     - [x] Docker CLI support
-    - [x] Docker Engine API support
-    - [ ] Podman Docker API support
-    - [ ] Podman Libpod API support
-	- [ ] Vim Plugin Integration (side-project)
+    - [x] Docker Engine API integration
+    - [ ] Podman Libpod API integration
+- Engineer Robustness
+    - [ ] Sufficient comments coverage
+    - [ ] Sufficient unit test coverage
+    - [ ] Structured logging support
+    - [ ] Unified API abstraction layer (`gRPC` / `HTTP RESTful`)
+- Extended Functionality
+    - [ ] IaC based configuration compatibility (`Ansible Playbooks`)
+    - [ ] Detached runtime backend (`Daemon backend` / `Remote K8s backend`)
+    - [ ] Observability enhancement (`Prometheus`)
+    - [ ] UX enhancement (Vim plugin, GitHub CLI plugin)
 - Community
-    - [ ] Across-platform support (Linux/macOS/WSL)
-    - [ ] Tutorials
-    - [ ] Docs
+    - [x] Updated `README.md`
+    - [ ] Updated Chinese version `README_zh.md`
 
 ---
 
@@ -122,8 +143,14 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for det
 
 ## About
 
-I'm a 2nd-year CS undergrad. This is a personal project and I may not have much time to maintain it.
+Hi! I'm **YardRat**, the developer behind Foxbox - this solo project built and maintained in my spare time.
 
-However, if you encounter any issues, feel free to contact me via GitHub or via email - I'll try to help if I can.
+As a second-year CS undergrad, I launched Foxbox both as a personal trial to work on a serious OSS project, and as a practical solution to problems I've encountered during my everyday development on Linux.
 
-If you like it, star it please :)
+While the project is still evolving, I'm also continuously refining it and exploring new directions to work on.
+
+Progress may not be fast, since I've always got a bunch of chores, and lots of my time are spent on trials and refactoring. However, I'm happy that the progress is steady.
+
+If you encounter isues or have suggestions, feel free to reach out, open an issue or open a PR - contributions are always welcome!
+
+If you find my stuff useful, please consider giving me a star :)
