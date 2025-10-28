@@ -6,13 +6,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "Clean all installed container image",
-	Run: func(_ *cobra.Command, _ []string) {
-		if err := panel.CleanTools(cfg.Tools); err != nil {
-			fatal("Error cleaning installed tools:", err)
-		}
-		fmt.Println("Tools cleaned successfully!")
-	},
+func newCleanCommand(rootCtx *rootContext) *cobra.Command {
+	return &cobra.Command{
+		Use:   "clean",
+		Short: "Clean all installed container image",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			panel, cfg := rootCtx.panel, rootCtx.cfg
+
+			if err := panel.CleanTools(cfg.Tools); err != nil {
+				return fmt.Errorf("Error cleaning installed tools: %w", err)
+			}
+			fmt.Println("Tools cleaned successfully!")
+			return nil
+		},
+	}
 }

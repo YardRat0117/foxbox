@@ -1,3 +1,4 @@
+// package command parses cli arguments
 package command
 
 import (
@@ -10,10 +11,14 @@ import (
 	"github.com/YardRat0117/foxbox/internal/types"
 )
 
+type rootContext struct {
+	panel container.PanelInterface
+	cfg   *types.Config
+}
+
 var (
-	cfg      *types.Config
 	panelOpt string
-	panel    container.PanelInterface
+	rootCtx  rootContext
 )
 
 var rootCmd = &cobra.Command{
@@ -21,34 +26,42 @@ var rootCmd = &cobra.Command{
 	Short: "Foxbox - lightweight tool panel",
 	Long:  "Foxbox manages containerized developer tools with a simple interface.",
 
-	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 		// Load config
-		var err error
-		cfg, err = config.LoadConfig()
-		if err != nil {
-			fatal("Failed to load config:", err)
+		var errLoadCfg error
+		rootCtx.cfg, errLoadCfg = config.LoadConfig()
+		if errLoadCfg != nil {
+			return fmt.Errorf("Failed to load config: %w", errLoadCfg)
 		}
 
 		// Init panel
 		switch panelOpt {
 		case "podman":
-			panel = container.NewPodmanPanel()
+			rootCtx.panel = container.NewPodmanPanel()
 		case "docker":
-			panel = container.NewDockerPanel()
+			rootCtx.panel = container.NewDockerPanel()
 		case "docker-api":
-			panel = container.NewDockerAPIPanel()
+			rootCtx.panel = container.NewDockerAPIPanel()
 		case "libpod-api":
-			fatal("Panel `libpod-api` under dev", nil)
+			return fmt.Errorf("Panel `libpod-api` under dev")
 		default:
-			fatal(fmt.Sprintf("Unknown panel %s", panelOpt), nil)
+			return fmt.Errorf("Unknown panel %s", panelOpt)
 		}
 
+		return nil
 	},
 }
 
 // Execute provides external interface for `main.go` to launch the program
 func Execute() error {
 	rootCmd.PersistentFlags().StringVar(&panelOpt, "panel", "podman", "container panel backend (podman | docker | api)")
-	rootCmd.AddCommand(installCmd, removeCmd, runCmd, listCmd, cleanCmd, versionCmd)
+	rootCmd.AddCommand(
+		newInstallCommand(&rootCtx),
+		newListCommand(&rootCtx),
+		newRunCommand(&rootCtx),
+		newRemoveCommand(&rootCtx),
+		newCleanCommand(&rootCtx),
+		newVersionCommand(),
+	)
 	return rootCmd.Execute()
 }

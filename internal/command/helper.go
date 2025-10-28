@@ -1,15 +1,8 @@
 package command
 
 import (
-	"fmt"
 	"strings"
-	"os"
 )
-
-func fatal(msg string, err error) {
-	fmt.Println(msg, err)
-	os.Exit(1)
-}
 
 func parseToolArg(arg string) (name, version string) {
 	parts := strings.SplitN(arg, "@", 2)
