@@ -22,7 +22,7 @@ build:
 compress:
 	@echo "Compressing with UPX..."
 	upx --best --lzma $(RELEASE_BIN) || echo "UPX not found or compression failed."
-	@du -h $(RELEASE)
+	@du -h $(RELEASE_BIN)
 
 # Cleaning up
 clean:
