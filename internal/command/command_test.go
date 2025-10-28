@@ -82,7 +82,7 @@ func (f *fakePanelErr) CleanTools(tools map[string]types.Tool) error {
 }
 
 // ------ Test ------
-func TestCLICommands(t *testing.T) {
+func TestPackageCommand(t *testing.T) {
 	// Initialization
 	// Initialize fakeRootCtx
 	fakeP := &fakePanel{
@@ -91,6 +91,7 @@ func TestCLICommands(t *testing.T) {
 	fakeC := &types.Config{
 		Tools: map[string]types.Tool{
 			"mytool": {Image: "mytool:latest"},
+			"rat":    {Image: "rat:1.17"},
 		},
 	}
 	fakeRootCtx := &rootContext{
@@ -132,6 +133,11 @@ func TestCLICommands(t *testing.T) {
 		}
 	})
 
+	// Test List
+	t.Run("test list for coverage", func(t *testing.T) {
+		listCmd.RunE(listCmd, []string{})
+	})
+
 	// Test remove
 	t.Run("remove success", func(t *testing.T) {
 		err := removeCmd.RunE(removeCmd, []string{"mytool@latest"})
@@ -157,11 +163,6 @@ func TestCLICommands(t *testing.T) {
 		if _, ok := fakeP.installed["othertool"]; !ok {
 			t.Fatalf("should not clean othertool")
 		}
-	})
-
-	// Test List
-	t.Run("test list for coverage", func(t *testing.T) {
-		listCmd.RunE(listCmd, []string{})
 	})
 
 	// Test Version
@@ -220,6 +221,5 @@ func TestCLICommands(t *testing.T) {
 		if !strings.Contains(err.Error(), "mock clean error") {
 			t.Fatalf("unexpected error message: %v", err)
 		}
-
 	})
 }
