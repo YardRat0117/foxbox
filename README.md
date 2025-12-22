@@ -63,7 +63,7 @@ Remember to move it somewhere in your `$PATH`.
 If you already have Go installed, you can simply install it directly via Go.
 
 ```shell
-go install github.com/YardRat0117/fo0xbox@latest
+go install github.com/YardRat0117/foxbox@latest
 ```
 
 The `foxbox` binary will be installed into your `$GOBIN` (typically `~/go/bin`, depending on your Go configuration).
