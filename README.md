@@ -2,6 +2,8 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+>  Note that this project is under going refactor, with breaking modifications to original architecture.
+
 ## What is Foxbox
 
 Foxbox is a Go-based, lightweight CLI tool for running development tools inside containers.
