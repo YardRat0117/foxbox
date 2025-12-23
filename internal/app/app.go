@@ -148,3 +148,28 @@ func (a *App) InstallTool(ctx context.Context, args []string) error {
 
 	return nil
 }
+
+// RemoveTool removes a configured tool.
+func (a *App) RemoveTool(ctx context.Context, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("no tool specified")
+	}
+
+	toolName, toolVer := parseToolArg(args[0])
+
+	tool, ok := a.cfg.Tools[toolName]
+	if !ok {
+		return fmt.Errorf("tool %q not configured", toolName)
+	}
+
+	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
+	if err != nil {
+		return fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
+	}
+
+	if err := a.rt.RemoveImage(ctx, imgRef); err != nil {
+		return fmt.Errorf("failed to remove image %q: %w", imgRef.Raw, err)
+	}
+
+	return nil
+}
