@@ -36,6 +36,7 @@ func NewRootCommand() *cobra.Command {
 	// TODO - more function support
 	rootCmd.AddCommand(newRunCommand(rootCtx))
 	rootCmd.AddCommand(newListCommand(rootCtx))
+	rootCmd.AddCommand(newInstallCommand(rootCtx))
 
 	return rootCmd
 }

@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/YardRat0117/foxbox/internal/domain"
-	"github.com/YardRat0117/foxbox/internal/runtime"
 	types "github.com/YardRat0117/foxbox/internal/foxtypes"
+	"github.com/YardRat0117/foxbox/internal/runtime"
 )
 
 // App orchestrates tool execution inside containers.
@@ -119,6 +119,31 @@ func (a *App) ListTool(ctx context.Context) error {
 			parenWidth, fmt.Sprintf("(%s)", tool.Image),
 			status, tags,
 		)
+	}
+
+	return nil
+}
+
+// InstallTool installs a configured tool.
+func (a *App) InstallTool(ctx context.Context, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("no tool specified")
+	}
+
+	toolName, toolVer := parseToolArg(args[0])
+
+	tool, ok := a.cfg.Tools[toolName]
+	if !ok {
+		return fmt.Errorf("tool %q not configured", toolName)
+	}
+
+	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
+	if err != nil {
+		return fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
+	}
+
+	if err := a.rt.EnsureImage(ctx, imgRef); err != nil {
+		return fmt.Errorf("failed to ensure image %q: %w", imgRef.Raw, err)
 	}
 
 	return nil
