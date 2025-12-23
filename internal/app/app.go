@@ -4,6 +4,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/YardRat0117/foxbox/internal/domain"
 	"github.com/YardRat0117/foxbox/internal/runtime"
@@ -14,11 +15,6 @@ import (
 type App struct {
 	cfg *types.Config
 	rt  runtime.Runtime
-}
-
-// New constructs a new App instance with configuration and runtime.
-func New(cfg *types.Config, rt runtime.Runtime) *App {
-	return &App{cfg: cfg, rt: rt}
 }
 
 // RunTool executes a configured tool inside a container.
@@ -78,6 +74,51 @@ func (a *App) RunTool(ctx context.Context, args []string) error {
 
 	if err := exec.Wait(ctx); err != nil {
 		return fmt.Errorf("execution failed: %w", err)
+	}
+
+	return nil
+}
+
+// ListTool lists all configured tool.
+func (a *App) ListTool(ctx context.Context, args []string) error {
+	images, err := a.rt.ListImage(ctx)
+	if err != nil {
+		return err
+	}
+
+	imageTags := make(map[string][]string)
+	for _, img := range images {
+		imageName := img.Ref.Raw
+		imageTag := img.Tag
+		// Slice for raw image name without tag
+		if idx := strings.LastIndex(imageName, ":"); idx != -1 {
+			imageName = imageName[:idx]
+		}
+		if idx := strings.LastIndex(imageTag, ":"); idx != -1 {
+			imageTag = imageTag[idx+1:]
+		}
+		imageTags[imageName] = append(imageTags[imageName], imageTag)
+	}
+
+	const nameWidth, parenWidth = 10, 15
+	fmt.Println("Configured tools:")
+
+	for name, tool := range a.cfg.Tools {
+		status := "[not installed]"
+		tags := ""
+
+		if tagList, exists := imageTags[tool.Image]; exists {
+			status = "[installed]    "
+			if len(tagList) > 0 {
+				tags = "tags: " + strings.Join(tagList, ", ")
+			}
+		}
+
+		fmt.Printf("- %-*s %-*s %s %s\n",
+			nameWidth, name,
+			parenWidth, fmt.Sprintf("(%s)", tool.Image),
+			status, tags,
+		)
 	}
 
 	return nil

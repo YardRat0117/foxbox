@@ -54,7 +54,7 @@ func (d *Runtime) EnsureImage(
 	}
 
 	// Pull image if missing
-	fmt.Printf("Pulling image %s ...\n", image)
+	fmt.Printf("Pulling image %s...\n", image)
 	out, err := cli.ImagePull(ctx, image, mobyClient.ImagePullOptions{})
 	if err != nil {
 		return err
@@ -66,17 +66,16 @@ func (d *Runtime) EnsureImage(
 
 	decoder := json.NewDecoder(out)
 	for {
-		var msg map[string]interface{}
+		var msg map[string]any
 		if err := decoder.Decode(&msg); err == io.EOF {
 			break
 		} else if err != nil {
 			return fmt.Errorf("decoding image pull response: %w", err)
 		}
 		if status, ok := msg["status"].(string); ok {
-			if strings.Contains(status, "Pulling from") ||
-				strings.Contains(status, "Pull complete") {
+			if strings.Contains(status, "Pulling from") {
 				if id, ok := msg["id"].(string); ok {
-					fmt.Printf("[%s] %s", id, status)
+					fmt.Printf("%s:%s\n", status, id)
 				} else {
 					fmt.Println(status)
 				}
@@ -207,6 +206,7 @@ func (d *Runtime) ListImage(
 			imageRef, _ := domain.NewImageRef(tag)
 			result = append(result, domain.ImageInfo{
 				Ref: imageRef,
+				Tag: tag,
 			})
 		}
 	}
