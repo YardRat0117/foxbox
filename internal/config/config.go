@@ -9,8 +9,8 @@ import (
 	"github.com/YardRat0117/foxbox/internal/types"
 )
 
-// LoadConfig allows subcmds to load config from preset config files.
-func LoadConfig() (*types.Config, error) {
+// Load loads application configuration from predefined locations.
+func Load() (*types.Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
