@@ -155,6 +155,7 @@ func (d *Runtime) Stop(
 	return cli.ContainerStop(ctx, string(id), mobyClient.ContainerStopOptions{})
 }
 
+// Remove - docker impl
 func (d *Runtime) Remove(
 	ctx context.Context,
 	id domain.ContainerID,

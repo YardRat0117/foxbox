@@ -1,3 +1,4 @@
+// Package main
 package main
 
 import (
@@ -10,7 +11,7 @@ import (
 func main() {
 	rootCmd := command.NewRootCommand()
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %w\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }

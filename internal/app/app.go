@@ -8,7 +8,7 @@ import (
 
 	"github.com/YardRat0117/foxbox/internal/domain"
 	"github.com/YardRat0117/foxbox/internal/runtime"
-	"github.com/YardRat0117/foxbox/internal/types"
+	types "github.com/YardRat0117/foxbox/internal/foxtypes"
 )
 
 // App orchestrates tool execution inside containers.
@@ -80,7 +80,7 @@ func (a *App) RunTool(ctx context.Context, args []string) error {
 }
 
 // ListTool lists all configured tool.
-func (a *App) ListTool(ctx context.Context, args []string) error {
+func (a *App) ListTool(ctx context.Context) error {
 	images, err := a.rt.ListImage(ctx)
 	if err != nil {
 		return err

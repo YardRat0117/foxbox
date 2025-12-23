@@ -1,9 +1,10 @@
-package types
+// Package foxtypes define internal types used, "fox" from "foxbox"
+package foxtypes
 
 // ToolStatus contains detailed info (installation & tags) read from the container
 type ToolStatus struct {
-        Installed bool
-        LocalTags []string
+	Installed bool
+	LocalTags []string
 }
 
 // Tool contains basic info for something to run in the container

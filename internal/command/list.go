@@ -9,8 +9,8 @@ func newListCommand(rootCtx *rootContext) *cobra.Command {
 		Use:   "list",
 		Short: "List all configured tools status",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return rootCtx.app.ListTool(cmd.Context(), args)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return rootCtx.app.ListTool(cmd.Context())
 		},
 	}
 }

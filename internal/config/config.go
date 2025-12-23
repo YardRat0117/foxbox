@@ -1,3 +1,4 @@
+// Package config loads config YAML file
 package config
 
 import (
@@ -6,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/YardRat0117/foxbox/internal/types"
+	types "github.com/YardRat0117/foxbox/internal/foxtypes"
 )
 
 // Load loads application configuration from predefined locations.
@@ -23,12 +24,15 @@ func Load() (*types.Config, error) {
 		configPath = userConfigPath
 	}
 
-	// Open the config file
+	// Open the config file, hard-coded YAML file
+	// nolint:gosec
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	// Decode the config file, and return as the type `Config`
 	var cfg types.Config
