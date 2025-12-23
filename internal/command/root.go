@@ -38,6 +38,7 @@ func NewRootCommand() *cobra.Command {
 	rootCmd.AddCommand(newListCommand(rootCtx))
 	rootCmd.AddCommand(newInstallCommand(rootCtx))
 	rootCmd.AddCommand(newRemoveCommand(rootCtx))
+	rootCmd.AddCommand(newCleanCommand(rootCtx))
 
 	return rootCmd
 }

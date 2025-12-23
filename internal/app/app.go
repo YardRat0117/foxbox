@@ -173,3 +173,40 @@ func (a *App) RemoveTool(ctx context.Context, args []string) error {
 
 	return nil
 }
+
+// CleanTool cleans all configured tool.
+func (a *App) CleanTool(ctx context.Context) error {
+	images, err := a.rt.ListImage(ctx)
+	if err != nil {
+		return err
+	}
+
+	imageTags := make(map[string][]string)
+	for _, img := range images {
+		imageName := img.Ref.Raw
+		imageTag := img.Tag
+		if idx := strings.LastIndex(imageName, ":"); idx != -1 {
+			imageName = imageName[:idx]
+		}
+		if idx := strings.LastIndex(imageTag, ":"); idx != -1 {
+			imageTag = imageTag[idx+1:]
+		}
+		imageTags[imageName] = append(imageTags[imageName], imageTag)
+	}
+
+	for _, tool := range a.cfg.Tools {
+		if tagList, exists := imageTags[tool.Image]; exists {
+			for _, tag := range tagList {
+				imgRef, err := domain.NewImageRef(tool.Image + ":" + tag)
+				if err != nil {
+					continue
+				}
+				if err := a.rt.RemoveImage(ctx, imgRef); err != nil {
+					fmt.Printf("failed to remove image %q:%v\n", imgRef.Raw, err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
