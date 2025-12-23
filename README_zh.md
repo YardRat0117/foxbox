@@ -65,7 +65,7 @@ make build
 如果你的系统中已经安装了 Go，可以直接使用以下命令安装：
 
 ```shell
-go install github.com/YardRat0117/foxbox@latest
+go install github.com/YardRat0117/foxbox/cmd/foxbox@latest
 ```
 
 可执行文件会被安装到你的 `$GOBIN`（通常是 `~/go/bin`，取决于 Go 的配置）。
