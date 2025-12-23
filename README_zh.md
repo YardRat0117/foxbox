@@ -2,8 +2,6 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
-> 请注意，本项目正在重构中，并引入了可能破坏原项目架构的变动。
-
 ## 什么是 Foxbox
 
 Foxbox 是一个使用 Go 编写的轻量级命令行工具，用于在容器中运行开发工具。
@@ -83,14 +81,14 @@ go install github.com/YardRat0117/foxbox@latest
 配置文件是一个名为 `foxbox.yml` 的 YAML 文件，位于 `~/.config` 目录下。
 示例配置文件见 `configs/demo.yml`。以下是字段说明：
 
-| 字段名        | 说明                                    |
-| :------------ | :-------------------------------------- |
-| `tools`       | 工具配置的根节点                        |
-| `<tool-name>` | 用户自定义的工具别名                    |
-| `image`       | 使用的容器镜像名称或标签                |
-| `entry`       | 要执行的命令（通常是工具的主命令）      |
-| `workdir`     | 容器内的工作目录（推荐 `/work`）        |
-| `volumes`     | 主机目录挂载列表（推荐 `$(pwd):/work`） |
+| 字段名        | 说明                                                         |
+| :------------ | :----------------------------------------------------------- |
+| `tools`       | 工具配置的根节点                                             |
+| `<tool-name>` | 用户自定义的工具别名                                         |
+| `image`       | 使用的容器镜像名称或标签                                     |
+| `entry`       | 要执行的命令（通常是工具的主命令）                           |
+| `workdir`     | 容器内的工作目录（推荐 `/work`，与`volumes`保持一致）        |
+| `volumes`     | 主机目录挂载列表（推荐 `$(pwd):/work`，与`workdir`保持一致） |
 
 此外，Foxbox 提供了友好的命令接口：
 
@@ -98,8 +96,7 @@ go install github.com/YardRat0117/foxbox@latest
 2. `install` - 安装一个工具
 3. `run` - 运行一个工具
 4. `remove` - 移除一个工具
-5. `clean` - 清除所有配置和已安装工具
-6. `version` - 查看版本信息
+5. `clean` - 清除所有和已配置的工具
 
 可以通过 `foxbox <command> --help` 查看详细帮助。
 
@@ -111,30 +108,22 @@ go install github.com/YardRat0117/foxbox@latest
 > 因此功能更新与问题修复的进度可能会比社区驱动的项目慢一些。
 > 该路线图可能会随时间调整或扩展，如果你愿意参与，非常欢迎关注与贡献！
 
-* 核心功能
-
-  * [x] 基本命令支持（`run`、`install`、`remove` 等）
-  * [x] 工具版本控制支持（`<tool>@<tag>`）
-  * [x] Podman CLI 支持
-  * [x] Docker CLI 支持
-  * [x] Docker Engine API 集成
-  * [ ] Podman Libpod API 集成
-* 工程实践
-
-  * [ ] 注释覆盖完善
-  * [ ] 单元测试覆盖完善
-  * [ ] 结构化日志支持
-  * [ ] 统一的 API 抽象层（`gRPC` / `HTTP RESTful`）
-* 扩展功能
-
-  * [ ] 基于 IaC 的配置兼容性（`Ansible Playbooks`）
-  * [ ] 分离式运行后端（`Daemon backend` / `Remote K8s backend`）
-  * [ ] 可观测性增强（`Prometheus`）
-  * [ ] 用户体验增强（Vim 插件、GitHub CLI 插件）
-* 社区
-
-  * [x] 更新英文版 `README.md`
-  * [ ] 更新中文版 `README_zh.md`
+- 核心功能
+    - [x] 基本命令支持（`run`、`install`、`remove` 等）
+    - [x] 工具版本控制支持（`<tool>@<tag>`）
+    - [x] Docker Engine API 集成
+    - [ ] Podman Libpod API 集成 (待定)
+- 工程鲁棒性
+    - [ ] 测试覆盖完善
+    - [ ] 统一的 API 抽象层（`gRPC` / `HTTP RESTful`）
+- 扩展功能 (待定)
+    - [ ] 基于 IaC 的配置兼容性（`Ansible Playbooks`）
+    - [ ] 分离式运行后端（`Daemon backend` / `Remote K8s backend`）
+    - [ ] 可观测性增强（`Prometheus`）
+    - [ ] 用户体验增强（Vim 插件、GitHub CLI 插件）
+- 社区
+    - [x] 更新英文版 `README.md`
+    - [x] 更新中文版 `README_zh.md`
 
 ---
 
