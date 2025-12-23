@@ -18,9 +18,12 @@ type App struct {
 }
 
 // RunTool executes a configured tool inside a container.
-func (a *App) RunTool(ctx context.Context, args []string) error {
+func (a *App) RunTool(ctx context.Context, args []string) (int, error) {
+	// Foxbox internal error
+	exitCode := 70
+
 	if len(args) == 0 {
-		return fmt.Errorf("no tool specified")
+		return exitCode, fmt.Errorf("no tool specified")
 	}
 
 	toolName, toolVer := parseToolArg(args[0])
@@ -28,16 +31,16 @@ func (a *App) RunTool(ctx context.Context, args []string) error {
 
 	tool, ok := a.cfg.Tools[toolName]
 	if !ok {
-		return fmt.Errorf("tool %q not configured", toolName)
+		return exitCode, fmt.Errorf("tool %q not configured", toolName)
 	}
 
 	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
 	if err != nil {
-		return fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
+		return exitCode, fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
 	}
 
 	if err := a.rt.EnsureImage(ctx, imgRef); err != nil {
-		return fmt.Errorf("failed to ensure image %q: %w", imgRef.Raw, err)
+		return exitCode, fmt.Errorf("failed to ensure image %q: %w", imgRef.Raw, err)
 	}
 
 	spec := domain.ContainerSpec{
@@ -49,7 +52,7 @@ func (a *App) RunTool(ctx context.Context, args []string) error {
 
 	id, err := a.rt.Create(ctx, spec)
 	if err != nil {
-		return fmt.Errorf("failed to create container: %w", err)
+		return exitCode, fmt.Errorf("failed to create container: %w", err)
 	}
 	defer func() {
 		_ = a.rt.Stop(ctx, id)
@@ -58,25 +61,27 @@ func (a *App) RunTool(ctx context.Context, args []string) error {
 
 	exec, err := a.rt.Exec(id)
 	if err != nil {
-		return fmt.Errorf("failed to exec in container: %w", err)
+		return exitCode, fmt.Errorf("failed to exec in container: %w", err)
 	}
 	defer func() {
 		_ = exec.Close(ctx)
 	}()
 
 	if err := exec.Attach(ctx); err != nil {
-		return fmt.Errorf("failed to attach to container: %w", err)
+		return exitCode, fmt.Errorf("failed to attach to container: %w", err)
 	}
 
 	if err := a.rt.Start(ctx, id); err != nil {
-		return fmt.Errorf("failed to start container: %w", err)
+		return exitCode, fmt.Errorf("failed to start container: %w", err)
 	}
 
-	if err := exec.Wait(ctx); err != nil {
-		return fmt.Errorf("execution failed: %w", err)
+	code, err := exec.Wait(ctx)
+	if err != nil {
+		return exitCode, fmt.Errorf("execution failed: %w", err)
 	}
 
-	return nil
+	// Retain actual tool behavior
+	return code, nil
 }
 
 // ListTool lists all configured tool.

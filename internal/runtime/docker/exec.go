@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/moby/moby/api/pkg/stdcopy"
@@ -33,13 +34,23 @@ func (e *dockerExecution) Attach(ctx context.Context) error {
 	return nil
 }
 
-func (e *dockerExecution) Wait(ctx context.Context) error {
-	statusCh, errCh := e.cli.ContainerWait(ctx, e.id, mobyContainer.WaitConditionNotRunning)
+func (e *dockerExecution) Wait(ctx context.Context) (int, error) {
+	statusCh, errCh := e.cli.ContainerWait(
+		ctx,
+		e.id,
+		mobyContainer.WaitConditionNotRunning,
+	)
+
 	select {
 	case err := <-errCh:
-		return err
-	case <-statusCh:
-		return nil
+		// Docker wait internal failure
+		return 0, err
+	case status := <-statusCh:
+		// Container exited
+		if status.Error != nil {
+			return int(status.StatusCode), fmt.Errorf("%s", status.Error.Message)
+		}
+		return int(status.StatusCode), nil
 	}
 }
 

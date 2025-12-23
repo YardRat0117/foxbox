@@ -1,6 +1,8 @@
 package command
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -10,7 +12,12 @@ func newRunCommand(rootCtx *rootContext) *cobra.Command {
 		Short: "Run a tool inside its container",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return rootCtx.app.RunTool(cmd.Context(), args)
+			code, err := rootCtx.app.RunTool(cmd.Context(), args)
+			if err != nil {
+				return err
+			}
+			os.Exit(code)
+			return nil
 		},
 	}
 }
