@@ -2,6 +2,8 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/YardRat0117/foxbox.svg)](https://pkg.go.dev/github.com/YardRat0117/foxbox)
+
 ## 什么是 Foxbox
 
 Foxbox 是一个使用 Go 编写的轻量级命令行工具，用于在容器中运行开发工具。

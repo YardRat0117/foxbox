@@ -2,6 +2,8 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/YardRat0117/foxbox.svg)](https://pkg.go.dev/github.com/YardRat0117/foxbox)
+
 ## What is Foxbox
 
 Foxbox is a Go-based, lightweight CLI tool for running development tools inside containers.
