@@ -15,7 +15,6 @@ type rootContext struct {
 
 // NewRootCommand creates noew root command, including dependency injection
 func NewRootCommand() *cobra.Command {
-	// TODO
 	cfg, err := config.Load()
 	if err != nil {
 		panic(err)
@@ -33,7 +32,6 @@ func NewRootCommand() *cobra.Command {
 		Short: "Foxbox - run tools in containers",
 	}
 
-	// TODO - more function support
 	rootCmd.AddCommand(newRunCommand(rootCtx))
 	rootCmd.AddCommand(newListCommand(rootCtx))
 	rootCmd.AddCommand(newInstallCommand(rootCtx))
