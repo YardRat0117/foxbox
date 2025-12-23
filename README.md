@@ -79,14 +79,14 @@ Before using Foxbox, you need to "configure" tools to run later.
 This is done through a YAML file named `foxbox.yml`, located under your config directory `~/.config` dir.
 
 An example is provided in `configs/demo.yml`. And here's these fileds explanation:
-| Field         | Description                                                     |
-| :------------ | :-------------------------------------------------------------- |
-| `tools`       | The root section containing all the tools for Foxbox.           |
-| `<tool-name>` | A user-defined alias for the tool                               |
-| `image`       | The container image name or tag to use.                         |
-| `entry`       | The entrypoint command to run. (most of cases the tool command) |
-| `workdir`     | The working directory inside the container. (`/work` suggested) |
-| `volumes`     | A list of host-directory mounts. (`$(pwd):/work` suggested)     |
+| Field         | Description                                                                           |
+| :-----------: | :-----------------------------------------------------------------------------------: |
+| `tools`       | The root section containing all the tools for Foxbox.                                 |
+| `<tool-name>` | A user-defined alias for the tool                                                     |
+| `image`       | The container image name or tag to use.                                               |
+| `entry`       | The entrypoint command to run. (most of cases the tool command)                       |
+| `workdir`     | The working directory inside the container. (`/work` suggested, align with `volumes`) |
+| `volumes`     | A list of host-directory mounts. (`$PWD:/work` suggested, align with `workdir`)       |
 
 Besides, Foxbox provides user-friendly commands to use:
 
@@ -99,8 +99,6 @@ Besides, Foxbox provides user-friendly commands to use:
 4. `remove` - Remove a specified tool
 
 5. `clean` - Clean all configured and installed tools
-
-6. `version` - Check version
 
 You can try `foxbox <command> --help` for detailed help.
 
@@ -115,24 +113,20 @@ You can try `foxbox <command> --help` for detailed help.
 - Core Functionality
     - [x] Basic commands (`run`, `install`, `remove` and etc.)
     - [x] Tool version control support (`<tool>@<tag>`)
-    - [x] Podman CLI support
-    - [x] Docker CLI support
     - [x] Docker Engine API integration
-    - [ ] Podman Libpod API integration
+    - [ ] Podman Libpod API integration (Staged)
 - Engineer Robustness
-    - [ ] Sufficient comments coverage
-    - [ ] Sufficient unit test coverage
-    - [ ] Structured logging support
+    - [x] Architecture Refactor
+    - [ ] Sufficient test coverage
+- Extended Functionality (Staged)
     - [ ] Unified API abstraction layer (`gRPC` / `HTTP RESTful`)
-- Extended Functionality
     - [ ] IaC based configuration compatibility (`Ansible Playbooks`)
-    - [ ] Detached runtime backend (`Daemon backend` / `Remote K8s backend`)
-    - [ ] Observability enhancement (`Prometheus`)
     - [ ] UX enhancement (Vim plugin, GitHub CLI plugin)
 - Community
     - [x] Updated `README.md`
     - [ ] Updated Chinese version `README_zh.md`
-
+- Deprecated Features
+    - Podman / Docker CLI support with `os/exec`
 ---
 
 ## License

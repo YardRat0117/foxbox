@@ -1,3 +1,4 @@
+// Package main
 package main
 
 import (
@@ -8,8 +9,9 @@ import (
 )
 
 func main() {
-	if err := command.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	rootCmd := command.NewRootCommand()
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }

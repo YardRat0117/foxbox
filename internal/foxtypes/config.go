@@ -1,4 +1,4 @@
-package types
+package foxtypes
 
 // Config is a map of `Tool`, which corresponds to a config file
 type Config struct {
