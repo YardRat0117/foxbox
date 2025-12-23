@@ -2,9 +2,9 @@ package docker
 
 import (
 	"context"
-	"io"
 	"os"
 
+	"github.com/moby/moby/api/pkg/stdcopy"
 	mobyContainer "github.com/moby/moby/api/types/container"
 	mobyClient "github.com/moby/moby/client"
 )
@@ -19,14 +19,16 @@ func (e *dockerExecution) Attach(ctx context.Context) error {
 		Stream: true,
 		Stdout: true,
 		Stderr: true,
+		Logs:   true,
 	})
 	if err != nil {
 		return err
 	}
 
 	go func() {
+		defer attach.Close()
 		// Just ignore
-		_, _ = io.Copy(os.Stdout, attach.Reader)
+		_, _ = stdcopy.StdCopy(os.Stdout, os.Stderr, attach.Reader)
 	}()
 	return nil
 }

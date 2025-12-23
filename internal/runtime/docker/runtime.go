@@ -3,6 +3,8 @@ package docker
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"slices"
 	"strings"
@@ -51,6 +53,8 @@ func (d *Runtime) EnsureImage(
 		}
 	}
 
+	// Pull image if missing
+	fmt.Printf("Pulling image %s ...\n", image)
 	out, err := cli.ImagePull(ctx, image, mobyClient.ImagePullOptions{})
 	if err != nil {
 		return err
@@ -60,7 +64,25 @@ func (d *Runtime) EnsureImage(
 		_ = out.Close()
 	}()
 
-	_, _ = io.Copy(io.Discard, out)
+	decoder := json.NewDecoder(out)
+	for {
+		var msg map[string]interface{}
+		if err := decoder.Decode(&msg); err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("decoding image pull response: %w", err)
+		}
+		if status, ok := msg["status"].(string); ok {
+			if strings.Contains(status, "Pulling from") ||
+				strings.Contains(status, "Pull complete") {
+				if id, ok := msg["id"].(string); ok {
+					fmt.Printf("[%s] %s", id, status)
+				} else {
+					fmt.Println(status)
+				}
+			}
+		}
+	}
 
 	return nil
 }
@@ -75,7 +97,7 @@ func (d *Runtime) Create(
 		return "", err
 	}
 
-	cmd := append([]string{spec.Entry}, spec.Args...)
+	cmd := spec.Cmd
 
 	binds := make([]string, 0, len(spec.Volumes))
 	for _, v := range spec.Volumes {
@@ -83,10 +105,12 @@ func (d *Runtime) Create(
 	}
 
 	cfg := mobyContainer.Config{
-		Image:      spec.Image.Raw,
-		Cmd:        cmd,
-		WorkingDir: spec.Workdir,
-		Tty:        true,
+		Image:        spec.Image.Raw,
+		Cmd:          cmd,
+		WorkingDir:   spec.WorkDir,
+		AttachStdout: true,
+		AttachStderr: true,
+		Tty:          false,
 	}
 
 	hostCfg := mobyContainer.HostConfig{
@@ -108,7 +132,7 @@ func (d *Runtime) Create(
 	return domain.ContainerID(resp.ID), nil
 }
 
-//Start - docker impl
+// Start - docker impl
 func (d *Runtime) Start(
 	ctx context.Context,
 	id domain.ContainerID,
@@ -120,7 +144,7 @@ func (d *Runtime) Start(
 	return cli.ContainerStart(ctx, string(id), mobyClient.ContainerStartOptions{})
 }
 
-//Stop - docker impl
+// Stop - docker impl
 func (d *Runtime) Stop(
 	ctx context.Context,
 	id domain.ContainerID,
@@ -132,7 +156,20 @@ func (d *Runtime) Stop(
 	return cli.ContainerStop(ctx, string(id), mobyClient.ContainerStopOptions{})
 }
 
-//RemoveImage - docker impl
+func (d *Runtime) Remove(
+	ctx context.Context,
+	id domain.ContainerID,
+) error {
+	cli, err := d.client()
+	if err != nil {
+		return err
+	}
+	return cli.ContainerRemove(ctx, string(id), mobyClient.ContainerRemoveOptions{
+		Force: true,
+	})
+}
+
+// RemoveImage - docker impl
 func (d *Runtime) RemoveImage(
 	ctx context.Context,
 	ref domain.ImageRef,
@@ -150,7 +187,7 @@ func (d *Runtime) RemoveImage(
 	return err
 }
 
-//ListImage - docker impl
+// ListImage - docker impl
 func (d *Runtime) ListImage(
 	ctx context.Context,
 ) ([]domain.ImageInfo, error) {
@@ -177,7 +214,7 @@ func (d *Runtime) ListImage(
 	return result, nil
 }
 
-//Exec - docker impl
+// Exec - docker impl
 func (d *Runtime) Exec(
 	id domain.ContainerID,
 ) (runtime.Execution, error) {

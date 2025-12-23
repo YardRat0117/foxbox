@@ -16,6 +16,7 @@ type Runtime interface {
 	Create(ctx context.Context, spec domain.ContainerSpec) (domain.ContainerID, error)
 	Start(ctx context.Context, id domain.ContainerID) error
 	Stop(ctx context.Context, id domain.ContainerID) error
+	Remove(ctx context.Context, id domain.ContainerID) error
 
 	Exec(id domain.ContainerID) (Execution, error)
 }
