@@ -4,80 +4,35 @@ package app
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/YardRat0117/foxbox/internal/domain"
 	types "github.com/YardRat0117/foxbox/internal/foxtypes"
-	"github.com/YardRat0117/foxbox/internal/runtime"
+	"github.com/YardRat0117/foxbox/internal/runner"
 )
 
 // App orchestrates tool execution inside containers.
 type App struct {
-	cfg *types.Config
-	rt  runtime.Runtime
+	cfg    *types.Config
+	runner *runner.Runner
 }
 
 // RunTool executes a configured tool inside a container.
-func (a *App) RunTool(ctx context.Context, args []string) (int, error) {
+func (a *App) RunTool(ctx context.Context, req RunToolRequest) (int, error) {
 	// Foxbox internal error
-	exitCode := 70
+	const exitCode = 70
 
-	if len(args) == 0 {
-		return exitCode, fmt.Errorf("no tool specified")
+	runReq := runner.RunRequest{
+		Env:     req.Env,
+		Cmd:     append([]string{req.Entry}, req.ToolArgs...),
+		WorkDir: req.WorkDir,
+		Mounts:  req.Mounts,
 	}
 
-	toolName, toolVer := parseToolArg(args[0])
-	toolArgs := args[1:]
-
-	tool, ok := a.cfg.Tools[toolName]
-	if !ok {
-		return exitCode, fmt.Errorf("tool %q not configured", toolName)
-	}
-
-	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
+	// Currently only exit code are directly returned
+	// More detailed info would be handled by runner
+	code, err := a.runner.Run(ctx, runReq)
 	if err != nil {
-		return exitCode, fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
-	}
-
-	if err := a.rt.EnsureImage(ctx, imgRef); err != nil {
-		return exitCode, fmt.Errorf("failed to ensure image %q: %w", imgRef.Raw, err)
-	}
-
-	spec := domain.ContainerSpec{
-		Image:   imgRef,
-		Cmd:     append([]string{tool.Entry}, toolArgs...),
-		WorkDir: tool.Workdir,
-		Volumes: parseVolumes(tool.Volumes),
-	}
-
-	id, err := a.rt.Create(ctx, spec)
-	if err != nil {
-		return exitCode, fmt.Errorf("failed to create container: %w", err)
-	}
-	defer func() {
-		_ = a.rt.Stop(ctx, id)
-		_ = a.rt.Remove(ctx, id)
-	}()
-
-	exec, err := a.rt.Exec(id)
-	if err != nil {
-		return exitCode, fmt.Errorf("failed to exec in container: %w", err)
-	}
-	defer func() {
-		_ = exec.Close(ctx)
-	}()
-
-	if err := exec.Attach(ctx); err != nil {
-		return exitCode, fmt.Errorf("failed to attach to container: %w", err)
-	}
-
-	if err := a.rt.Start(ctx, id); err != nil {
-		return exitCode, fmt.Errorf("failed to start container: %w", err)
-	}
-
-	code, err := exec.Wait(ctx)
-	if err != nil {
-		return exitCode, fmt.Errorf("execution failed: %w", err)
+		return exitCode, err
 	}
 
 	// Retain actual tool behavior
@@ -86,43 +41,27 @@ func (a *App) RunTool(ctx context.Context, args []string) (int, error) {
 
 // ListTool lists all configured tool.
 func (a *App) ListTool(ctx context.Context) error {
-	images, err := a.rt.ListImage(ctx)
-	if err != nil {
-		return err
-	}
-
-	imageTags := make(map[string][]string)
-	for _, img := range images {
-		imageName := img.Ref.Raw
-		imageTag := img.Tag
-		// Slice for raw image name without tag
-		if idx := strings.LastIndex(imageName, ":"); idx != -1 {
-			imageName = imageName[:idx]
-		}
-		if idx := strings.LastIndex(imageTag, ":"); idx != -1 {
-			imageTag = imageTag[idx+1:]
-		}
-		imageTags[imageName] = append(imageTags[imageName], imageTag)
-	}
-
 	const nameWidth, parenWidth = 10, 15
 	fmt.Println("Configured tools:")
 
 	for name, tool := range a.cfg.Tools {
-		status := "[not installed]"
-		tags := ""
-
-		if tagList, exists := imageTags[tool.Image]; exists {
-			status = "[installed]    "
-			if len(tagList) > 0 {
-				tags = "tags: " + strings.Join(tagList, ", ")
+		installed, err := a.runner.HasEnv(ctx, tool.Env)
+		var status string
+		if err == nil {
+			if installed {
+				status = "[installed]"
+			} else {
+				status = "[not installed]"
 			}
+		} else {
+			status = "[error]"
 		}
 
-		fmt.Printf("- %-*s %-*s %s %s\n",
+		fmt.Printf(
+			"- %-*s %-*s %s\n",
 			nameWidth, name,
-			parenWidth, fmt.Sprintf("(%s)", tool.Image),
-			status, tags,
+			parenWidth, fmt.Sprintf("(%s)", tool.Env),
+			status,
 		)
 	}
 
@@ -130,86 +69,27 @@ func (a *App) ListTool(ctx context.Context) error {
 }
 
 // InstallTool installs a configured tool.
-func (a *App) InstallTool(ctx context.Context, args []string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("no tool specified")
-	}
-
-	toolName, toolVer := parseToolArg(args[0])
-
-	tool, ok := a.cfg.Tools[toolName]
-	if !ok {
-		return fmt.Errorf("tool %q not configured", toolName)
-	}
-
-	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
-	if err != nil {
-		return fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
-	}
-
-	if err := a.rt.EnsureImage(ctx, imgRef); err != nil {
-		return fmt.Errorf("failed to ensure image %q: %w", imgRef.Raw, err)
-	}
-
-	return nil
+func (a *App) InstallTool(ctx context.Context, ref domain.EnvRef) error {
+	return a.runner.EnsureEnv(ctx, ref)
 }
 
 // RemoveTool removes a configured tool.
-func (a *App) RemoveTool(ctx context.Context, args []string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("no tool specified")
-	}
-
-	toolName, toolVer := parseToolArg(args[0])
-
-	tool, ok := a.cfg.Tools[toolName]
-	if !ok {
-		return fmt.Errorf("tool %q not configured", toolName)
-	}
-
-	imgRef, err := domain.NewImageRef(tool.Image + ":" + toolVer)
-	if err != nil {
-		return fmt.Errorf("invalid image reference for tool %q: %w", toolName, err)
-	}
-
-	if err := a.rt.RemoveImage(ctx, imgRef); err != nil {
-		return fmt.Errorf("failed to remove image %q: %w", imgRef.Raw, err)
-	}
-
-	return nil
+func (a *App) RemoveTool(ctx context.Context, ref domain.EnvRef) error {
+	return a.runner.RemoveEnv(ctx, ref)
 }
 
 // CleanTool cleans all configured tool.
 func (a *App) CleanTool(ctx context.Context) error {
-	images, err := a.rt.ListImage(ctx)
-	if err != nil {
-		return err
-	}
-
-	imageTags := make(map[string][]string)
-	for _, img := range images {
-		imageName := img.Ref.Raw
-		imageTag := img.Tag
-		if idx := strings.LastIndex(imageName, ":"); idx != -1 {
-			imageName = imageName[:idx]
-		}
-		if idx := strings.LastIndex(imageTag, ":"); idx != -1 {
-			imageTag = imageTag[idx+1:]
-		}
-		imageTags[imageName] = append(imageTags[imageName], imageTag)
-	}
-
 	for _, tool := range a.cfg.Tools {
-		if tagList, exists := imageTags[tool.Image]; exists {
-			for _, tag := range tagList {
-				imgRef, err := domain.NewImageRef(tool.Image + ":" + tag)
-				if err != nil {
-					continue
-				}
-				if err := a.rt.RemoveImage(ctx, imgRef); err != nil {
-					fmt.Printf("failed to remove image %q:%v\n", imgRef.Raw, err)
-				}
+		installed, err := a.runner.HasEnv(ctx, tool.Env)
+		if err != nil {
+			return err
+		}
+		if installed {
+			if err := a.runner.RemoveEnv(ctx, tool.Env); err != nil {
+				return err
 			}
+
 		}
 	}
 

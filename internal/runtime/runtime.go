@@ -8,15 +8,14 @@ import (
 
 // Runtime defines the abstract capabilities of a container runtime.
 type Runtime interface {
-	// image lifecycle
-	EnsureImage(ctx context.Context, ref domain.ImageRef) error
-	RemoveImage(ctx context.Context, ref domain.ImageRef) error
-	ListImage(ctx context.Context) ([]domain.ImageInfo, error)
+	// execution environment lifecycle
+	EnsureEnv(ctx context.Context, ref domain.EnvRef) error
+	RemoveEnv(ctx context.Context, ref domain.EnvRef) error
+	HasEnv(ctx context.Context, ref domain.EnvRef) (bool, error)
 
-	Create(ctx context.Context, spec domain.ContainerSpec) (domain.ContainerID, error)
-	Start(ctx context.Context, id domain.ContainerID) error
-	Stop(ctx context.Context, id domain.ContainerID) error
-	Remove(ctx context.Context, id domain.ContainerID) error
-
-	Exec(id domain.ContainerID) (Execution, error)
+	// sandbox lifecycle
+	CreateSandbox(ctx context.Context, spec domain.SandboxSpec) (domain.SandboxID, error)
+	StartSandbox(ctx context.Context, id domain.SandboxID) error
+	WaitSandbox(ctx context.Context, id domain.SandboxID) (domain.SandboxResult, error)
+	RemoveSandbox(ctx context.Context, id domain.SandboxID) error
 }

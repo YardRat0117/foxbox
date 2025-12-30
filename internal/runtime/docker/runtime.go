@@ -4,6 +4,7 @@ package docker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"slices"
@@ -25,12 +26,17 @@ var _ runtime.Runtime = (*Runtime)(nil)
 
 // --- Runtime interface implementation ---
 
-// EnsureImage - docker impl
-func (d *Runtime) EnsureImage(
+// EnsureEnv - docker impl
+func (d *Runtime) EnsureEnv(
 	ctx context.Context,
-	ref domain.ImageRef,
+	ref domain.EnvRef,
 ) error {
-	image := ref.Raw
+	oci, ok := ref.(domain.OCIEnvRef)
+	if !ok {
+		return errors.New("docker runtime only supports OCI environment")
+	}
+
+	image := oci.Image
 
 	// Use "latest" as default tag
 	if !strings.Contains(image, ":") {
@@ -86,30 +92,91 @@ func (d *Runtime) EnsureImage(
 	return nil
 }
 
-// Create - docker impl
-func (d *Runtime) Create(
+// RemoveEnv - docker impl
+func (d *Runtime) RemoveEnv(
 	ctx context.Context,
-	spec domain.ContainerSpec,
-) (domain.ContainerID, error) {
+	ref domain.EnvRef,
+) error {
+	oci, ok := ref.(domain.OCIEnvRef)
+	if !ok {
+		return errors.New("docker runtime only supports OCI environment")
+	}
+
+	cli, err := d.client()
+	if err != nil {
+		return err
+	}
+
+	_, err = cli.ImageRemove(
+		ctx,
+		oci.Image,
+		mobyClient.ImageRemoveOptions{Force: true},
+	)
+	return err
+}
+
+// HasEnv - docker impl
+func (d *Runtime) HasEnv(
+	ctx context.Context,
+	ref domain.EnvRef,
+) (bool, error) {
+	oci, ok := ref.(domain.OCIEnvRef)
+	if !ok {
+		return false, errors.New("docker runtime only supports OCI environment")
+	}
+
+	cli, err := d.client()
+	if err != nil {
+		return false, err
+	}
+
+	_, err = cli.ImageInspect(ctx, oci.Image)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// CreateSandbox - docker impl
+func (d *Runtime) CreateSandbox(
+	ctx context.Context,
+	spec domain.SandboxSpec,
+) (domain.SandboxID, error) {
 	cli, err := d.client()
 	if err != nil {
 		return "", err
 	}
 
-	cmd := spec.Cmd
+	// OCI Environment dispatch
+	ociEnv, ok := spec.Env.(domain.OCIEnvRef)
+	if !ok {
+		return "", errors.New("docker runtime only supports OCI environment")
+	}
 
-	binds := make([]string, 0, len(spec.Volumes))
-	for _, v := range spec.Volumes {
-		binds = append(binds, v.Host+":"+v.Guest)
+	// Mounts
+	binds := make([]string, 0, len(spec.Mounts))
+	for _, m := range spec.Mounts {
+		bind := m.Source + ":" + m.Target
+		if m.ReadOnly {
+			bind += ":ro"
+		}
+		binds = append(binds, bind)
+	}
+
+	// Env Vars
+	var env []string
+	for k, v := range spec.EnvVar {
+		env = append(env, k+"="+v)
 	}
 
 	cfg := mobyContainer.Config{
-		Image:        spec.Image.Raw,
-		Cmd:          cmd,
-		WorkingDir:   spec.WorkDir,
-		AttachStdout: true,
-		AttachStderr: true,
-		Tty:          false,
+		Image:      ociEnv.Image,
+		Cmd:        spec.Cmd,
+		WorkingDir: spec.WorkDir,
+		Env:        env,
+		User:       spec.User,
+		Tty:        false,
 	}
 
 	hostCfg := mobyContainer.HostConfig{
@@ -128,13 +195,13 @@ func (d *Runtime) Create(
 		return "", err
 	}
 
-	return domain.ContainerID(resp.ID), nil
+	return domain.SandboxID(resp.ID), nil
 }
 
-// Start - docker impl
-func (d *Runtime) Start(
+// StartSandbox - docker impl
+func (d *Runtime) StartSandbox(
 	ctx context.Context,
-	id domain.ContainerID,
+	id domain.SandboxID,
 ) error {
 	cli, err := d.client()
 	if err != nil {
@@ -143,22 +210,40 @@ func (d *Runtime) Start(
 	return cli.ContainerStart(ctx, string(id), mobyClient.ContainerStartOptions{})
 }
 
-// Stop - docker impl
-func (d *Runtime) Stop(
+// WaitSandbox - docker impl
+func (d *Runtime) WaitSandbox(
 	ctx context.Context,
-	id domain.ContainerID,
-) error {
+	id domain.SandboxID,
+) (domain.SandboxResult, error) {
 	cli, err := d.client()
 	if err != nil {
-		return err
+		return domain.SandboxResult{}, err
 	}
-	return cli.ContainerStop(ctx, string(id), mobyClient.ContainerStopOptions{})
+
+	statusCh, errCh := cli.ContainerWait(
+		ctx,
+		string(id),
+		mobyContainer.WaitConditionNotRunning,
+	)
+
+	select {
+	case err := <-errCh:
+		if err != nil {
+			return domain.SandboxResult{}, err
+		}
+	case status := <-statusCh:
+		return domain.SandboxResult{
+			ExitCode: int(status.StatusCode),
+		}, nil
+	}
+
+	return domain.SandboxResult{}, ctx.Err()
 }
 
-// Remove - docker impl
-func (d *Runtime) Remove(
+// RemoveSandbox - docker impl
+func (d *Runtime) RemoveSandbox(
 	ctx context.Context,
-	id domain.ContainerID,
+	id domain.SandboxID,
 ) error {
 	cli, err := d.client()
 	if err != nil {
@@ -167,64 +252,4 @@ func (d *Runtime) Remove(
 	return cli.ContainerRemove(ctx, string(id), mobyClient.ContainerRemoveOptions{
 		Force: true,
 	})
-}
-
-// RemoveImage - docker impl
-func (d *Runtime) RemoveImage(
-	ctx context.Context,
-	ref domain.ImageRef,
-) error {
-	cli, err := d.client()
-	if err != nil {
-		return err
-	}
-
-	_, err = cli.ImageRemove(
-		ctx,
-		ref.Raw,
-		mobyClient.ImageRemoveOptions{Force: true},
-	)
-	return err
-}
-
-// ListImage - docker impl
-func (d *Runtime) ListImage(
-	ctx context.Context,
-) ([]domain.ImageInfo, error) {
-	cli, err := d.client()
-	if err != nil {
-		return nil, err
-	}
-
-	images, err := cli.ImageList(ctx, mobyClient.ImageListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	var result []domain.ImageInfo
-	for _, img := range images {
-		for _, tag := range img.RepoTags {
-			imageRef, _ := domain.NewImageRef(tag)
-			result = append(result, domain.ImageInfo{
-				Ref: imageRef,
-				Tag: tag,
-			})
-		}
-	}
-
-	return result, nil
-}
-
-// Exec - docker impl
-func (d *Runtime) Exec(
-	id domain.ContainerID,
-) (runtime.Execution, error) {
-	cli, err := d.client()
-	if err != nil {
-		return nil, err
-	}
-	return &dockerExecution{
-		cli: cli,
-		id:  string(id),
-	}, nil
 }

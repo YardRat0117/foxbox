@@ -17,3 +17,16 @@ func parseToolArg(arg string) (name, version string) {
 
 	return
 }
+
+// NewRunToolRequest builds a new RunToolRequest
+func (a *App) NewRunToolRequest(toolName string, args []string) RunToolRequest {
+	tool := a.cfg.Tools[toolName]
+
+	return RunToolRequest{
+		ToolArgs: args,
+		Entry:    tool.Entry,
+		Env:      tool.Env,
+		Mounts:   tool.Mounts,
+		WorkDir:  tool.Workdir,
+	}
+}
