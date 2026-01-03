@@ -2,6 +2,8 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/YardRat0117/foxbox.svg)](https://pkg.go.dev/github.com/YardRat0117/foxbox)
+
 ## 什么是 Foxbox
 
 Foxbox 是一个使用 Go 编写的轻量级命令行工具，用于在容器中运行开发工具。
@@ -65,7 +67,7 @@ make build
 如果你的系统中已经安装了 Go，可以直接使用以下命令安装：
 
 ```shell
-go install github.com/YardRat0117/foxbox@latest
+go install github.com/YardRat0117/foxbox/cmd/foxbox@latest
 ```
 
 可执行文件会被安装到你的 `$GOBIN`（通常是 `~/go/bin`，取决于 Go 的配置）。

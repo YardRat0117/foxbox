@@ -1,7 +1,10 @@
 # ==== Config ====
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+COMMIT ?= $(shell git rev-parse --short HEAD)
+PKG_VERSION ?= main
 MAIN := ./cmd/foxbox
-PKG_VERSION := github.com/YardRat0117/foxbox/internal/version
-RELEASE_BIN ?= bin/foxbox
+RELEASE_BIN ?= bin/foxbox-$(GOOS)-$(GOARCH)
 
 # ==== Build Info ====
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
@@ -12,10 +15,12 @@ all: build compress
 
 # Compile Go binary
 build:
-	@echo "Building $(RELEASE_BIN)..."
+	@echo "Building $(RELEASE_BIN) for $(GOOS)/$(GOARCH)..."
 	@echo "Commit: $(COMMIT)"
 	@mkdir -p $(dir $(RELEASE_BIN))
-	go build -ldflags="-s -w -X $(PKG_VERSION).Commit=$(COMMIT)" -o $(RELEASE_BIN) $(MAIN)
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build \
+		-ldflags="-s -w -X $(PKG_VERSION).Commit=$(COMMIT)" \
+		-o $(RELEASE_BIN) $(MAIN)
 	@du -h $(RELEASE_BIN)
 
 # Compress with UPX
