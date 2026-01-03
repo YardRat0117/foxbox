@@ -97,4 +97,4 @@ jobs:
             foxbox-linux-amd64/foxbox-linux-amd64
             foxbox-linux-arm64/foxbox-linux-arm64
             foxbox-macos-amd64/foxbox-macos-amd64
-            foxbox-linux-arm64/foxbox-linux-arm64
+            foxbox-macos-arm64/foxbox-macos-arm64
