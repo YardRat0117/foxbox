@@ -41,7 +41,7 @@ jobs:
           PKG_VERSION: main
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: foxbox-linux-${{ matrix.arch }}
           path: bin/foxbox-linux-${{ matrix.arch }}
@@ -76,7 +76,7 @@ jobs:
           PKG_VERSION: main
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: foxbox-macos-${{ matrix.arch }}
           path: bin/foxbox-macos-${{ matrix.arch }}
@@ -88,7 +88,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
