@@ -3,12 +3,19 @@ name: Build & Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
+env:
+  GO111MODULE: on
+  CGO_ENABLED: 0
+
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
 
     steps:
       - name: Checkout code
@@ -17,24 +24,77 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: "1.25"
 
-      - name: Install UPX (optional)
+      - name: Install UPX
         run: sudo apt-get update && sudo apt-get install -y upx
 
-      - name: Build binary
+      - name: Build for Linux
         run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          COMMIT=$(git rev-parse --short HEAD)
-          BIN_NAME=bin/foxbox-${TAG}-${COMMIT}
-          make
+          export GOOS=linux
+          export GOARCH=${{ matrix.arch }}
+          export COMMIT=$(git rev-parse --short HEAD)
+          export RELEASE_BIN=bin/foxbox-linux-${{ matrix.arch }}
+          make build
+          make compress
         env:
-          GO111MODULE: on
+          PKG_VERSION: main
 
-      - name: Create GitHub Release
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: foxbox-linux-${{ matrix.arch }}
+          path: bin/foxbox-linux-${{ matrix.arch }}
+
+  build-mac:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.25"
+
+      - name: Install UPX
+        run: brew install upx
+
+      - name: Build for macOS
+        run: |
+          export GOOS=darwin
+          export GOARCH=${{ matrix.arch }}
+          export COMMIT=$(git rev-parse --short HEAD)
+          export RELEASE_BIN=bin/foxbox-macos-${{ matrix.arch }}
+          make build
+          make compress
+        env:
+          PKG_VERSION: main
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: foxbox-macos-${{ matrix.arch }}
+          path: bin/foxbox-macos-${{ matrix.arch }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-mac]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: bin/foxbox
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          files: |
+            foxbox-linux-amd64/foxbox-linux-amd64
+            foxbox-linux-arm64/foxbox-linux-arm64
+            foxbox-macos-amd64/foxbox-macos-amd64
+            foxbox-linux-arm64/foxbox-linux-arm64
