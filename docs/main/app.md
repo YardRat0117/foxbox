@@ -46,3 +46,13 @@ type App struct {
 - Translating runtime errors into user-facing failures
 
 Detailed, tool-related use cases are documented in [this independent doc](tool-related.md).
+
+> Note: App methods return:
+
+  - either an exit code (for `RunTool`)
+
+  - or an error
+
+- Internal failures are mapped to a fixed exit code (`70`)
+
+- Runtime errors are surfaced directly to the user
