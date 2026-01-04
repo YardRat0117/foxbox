@@ -45,4 +45,4 @@ type App struct {
 
 - Translating runtime errors into user-facing failures
 
-Detailed, tool-related use cases are documented in this independent doc [tool-related.md].
+Detailed, tool-related use cases are documented in [this independent doc](tool-related.md).
