@@ -117,6 +117,7 @@ You can try `foxbox <command> --help` for detailed help.
     - [x] Tool version control support (`<tool>@<tag>`)
     - [x] Docker Engine API integration
     - [ ] Podman Libpod API integration (Staged)
+    - [ ] MicroVM integration (Planned)
 - Engineer Robustness
     - [x] Architecture Refactor
     - [ ] Sufficient test coverage
@@ -126,7 +127,7 @@ You can try `foxbox <command> --help` for detailed help.
     - [ ] UX enhancement (Vim plugin, GitHub CLI plugin)
 - Community
     - [x] Updated `README.md`
-    - [ ] Updated Chinese version `README_zh.md`
+    - [x] Updated Chinese version `README_zh.md`
 - Deprecated Features
     - Podman / Docker CLI support with `os/exec`
 ---
