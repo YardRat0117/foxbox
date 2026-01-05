@@ -9,9 +9,19 @@ linters:
     - gocyclo
     - gosec
     - dupl
+    - errcheck
+    - unused
+    - goconst
+    - gocritic
+formatter:
+  enable:
+    - goimports
+
 run:
   timeout: 30s
 
 linters-settings:
   dupl:
     threshold: 80
+  gocyclo:
+    min-complexity: 15

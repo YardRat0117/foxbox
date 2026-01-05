@@ -1,0 +1,2 @@
+- name: Golangci-lint
+  uses: golangci/golangci-lint-action@v9.2.0
