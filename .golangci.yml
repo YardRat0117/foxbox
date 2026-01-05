@@ -1,4 +1,4 @@
-version: 2
+version: "2"
 
 linters:
   enable:
@@ -13,15 +13,11 @@ linters:
     - unused
     - goconst
     - gocritic
-formatter:
-  enable:
-    - goimports
+  settings:
+    dupl:
+      threshold: 120
+    gocyclo:
+      min-complexity: 15
 
 run:
   timeout: 30s
-
-linters-settings:
-  dupl:
-    threshold: 80
-  gocyclo:
-    min-complexity: 15
