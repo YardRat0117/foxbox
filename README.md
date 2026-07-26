@@ -1,3 +1,5 @@
+> Develop staged, Codebase Archived & Migrated to Private Forgejo Service
+
 # Foxbox
 
 [English](./README.md) | [中文](./README_zh.md)
